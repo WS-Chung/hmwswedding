@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { NavLink } from 'react-router-dom';
 
 /**
@@ -49,24 +50,53 @@ const NAV_ITEMS: readonly NavItem[] = [
 ] as const;
 
 export function SideNavigation() {
+  /**
+   * 모바일(≤768px) 전용 슬라이드바 열림 상태. 데스크탑에서는 CSS가 사이드바를
+   * 항상 표시하므로 이 값은 무시된다(햄버거 버튼도 CSS로 숨겨진다).
+   */
+  const [isOpen, setIsOpen] = useState(false);
+  const close = () => setIsOpen(false);
+
   return (
-    <nav className="side-navigation" aria-label="주 메뉴">
-      <h1 className="side-nav-title">결혼준비</h1>
-      <ul className="side-nav-links" role="list">
-        {NAV_ITEMS.map((item) => (
-          <li key={item.to}>
-            <NavLink
-              to={item.to}
-              end={item.end}
-              className={({ isActive }) =>
-                isActive ? 'side-nav-link active' : 'side-nav-link'
-              }
-            >
-              {item.label}
-            </NavLink>
-          </li>
-        ))}
-      </ul>
-    </nav>
+    <>
+      {/* 모바일 좌상단 햄버거 토글. 데스크탑에서는 display:none. */}
+      <button
+        type="button"
+        className="nav-hamburger"
+        aria-label={isOpen ? '메뉴 닫기' : '메뉴 열기'}
+        aria-expanded={isOpen}
+        onClick={() => setIsOpen((v) => !v)}
+      >
+        <span aria-hidden="true">{isOpen ? '✕' : '☰'}</span>
+      </button>
+
+      {/* 슬라이드바가 열려 있을 때 뒤 콘텐츠를 덮는 오버레이(터치 시 닫힘). */}
+      {isOpen && (
+        <div className="nav-overlay" onClick={close} aria-hidden="true" />
+      )}
+
+      <nav
+        className={isOpen ? 'side-navigation open' : 'side-navigation'}
+        aria-label="주 메뉴"
+      >
+        <h1 className="side-nav-title">결혼준비</h1>
+        <ul className="side-nav-links" role="list">
+          {NAV_ITEMS.map((item) => (
+            <li key={item.to}>
+              <NavLink
+                to={item.to}
+                end={item.end}
+                onClick={close}
+                className={({ isActive }) =>
+                  isActive ? 'side-nav-link active' : 'side-nav-link'
+                }
+              >
+                {item.label}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </>
   );
 }
