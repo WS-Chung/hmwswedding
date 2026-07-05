@@ -7,6 +7,7 @@ import { DateField } from '../../components/DateField';
 import { DataTable } from '../../components/DataTable';
 import type { DataTableColumn } from '../../components/DataTable';
 import { InlineError } from '../../components/InlineError';
+import { Modal } from '../../components/Modal';
 import { groupByCategory } from '../../lib/budget';
 import { normalizeBudgetItem } from '../../lib/normalize';
 import { formatKRW } from '../../lib/format';
@@ -35,7 +36,7 @@ import type { BudgetItem, BudgetItemUpdatePatch } from './budgetApi';
  *        - 우측 정렬 "항목 추가" PillButton
  *        - `<DataTable>`에 그 그룹의 항목을 표시(카테고리 열은 포함하지 않음 —
  *          섹션 헤더가 이미 카테고리를 시각적으로 담당). 열 순서:
- *          항목명 · 상품명 · 결제금액 · 결제예정일 · 결제수단 · 할부여부 ·
+ *          항목명 · 상품명 · 결제금액 · 결제일 · 결제수단 · 할부여부 ·
  *          거래처 · 비고.
  *        - 결제금액 열은 `formatKRW`로 표시(Requirement 7.7 스타일).
  *   3) 마스터 목록(`categories`)에 존재하지 않는 카테고리를 가진 스트랜디드
@@ -60,7 +61,7 @@ import type { BudgetItem, BudgetItemUpdatePatch } from './budgetApi';
  *       · `Wed_amount`가 patch에 있으면 `isValidAmount` 재검증. 빈 값 또는
  *         non-integer / 음수 / non-finite면 저장을 거부(throw). DataTable이
  *         편집 모드를 유지하고 `onError`로 메시지를 라우팅한다.
- *       · 다른 nullable string 컬럼(항목명 · 상품명 · 결제예정일 등)에
+ *       · 다른 nullable string 컬럼(항목명 · 상품명 · 결제일 등)에
  *         공백/빈 값이 들어오면 `null`로 정규화(Requirement 5.8).
  *
  * 오류 처리 계약(Requirement 2.5, Property 17):
@@ -332,7 +333,7 @@ export function BudgetItemTable(props: BudgetItemTableProps) {
     },
     {
       key: 'Wed_due_date',
-      header: '결제예정일',
+      header: '결제일',
       render: (row) => (row.Wed_due_date === null ? '' : row.Wed_due_date),
     },
     {
@@ -420,107 +421,12 @@ export function BudgetItemTable(props: BudgetItemTableProps) {
         );
       })}
 
-      {newRowCategory !== null && (
-        <section
-          className="budget-add-form"
-          aria-label="새 예산 항목"
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--space-sm)',
-            padding: 'var(--space-lg)',
-            background: 'var(--surface-pearl)',
-            border: '1px solid var(--hairline)',
-            borderRadius: 'var(--rounded-md)',
-          }}
-        >
-          <h3
-            style={{
-              margin: 0,
-              fontFamily: 'var(--font-display)',
-              fontSize: 'var(--font-body-strong-size)',
-              fontWeight: 'var(--font-body-strong-weight)',
-              lineHeight: 'var(--font-body-strong-line-height)',
-              color: 'var(--ink)',
-            }}
-          >
-            새 예산 항목
-          </h3>
-
-          <Select
-            label="카테고리"
-            required
-            value={addForm.Wed_category}
-            onChange={(v) => setAddForm({ ...addForm, Wed_category: v })}
-            options={categories}
-            placeholder="카테고리를 선택해주세요"
-          />
-
-          <TextField
-            label="항목명"
-            value={addForm.Wed_item_name}
-            onChange={(v) => setAddForm({ ...addForm, Wed_item_name: v })}
-          />
-
-          <TextField
-            label="상품명"
-            value={addForm.Wed_product_name}
-            onChange={(v) => setAddForm({ ...addForm, Wed_product_name: v })}
-          />
-
-          <NumberField
-            label="결제금액"
-            required
-            value={addForm.Wed_amount === '' ? null : Number(addForm.Wed_amount)}
-            onChange={(v) =>
-              setAddForm({
-                ...addForm,
-                Wed_amount: v === null ? '' : String(v),
-              })
-            }
-          />
-
-          <DateField
-            label="결제예정일"
-            value={addForm.Wed_due_date}
-            onChange={(v) => setAddForm({ ...addForm, Wed_due_date: v })}
-          />
-
-          <TextField
-            label="결제수단"
-            value={addForm.Wed_pay_method}
-            onChange={(v) => setAddForm({ ...addForm, Wed_pay_method: v })}
-          />
-
-          <TextField
-            label="할부여부"
-            value={addForm.Wed_installment}
-            onChange={(v) => setAddForm({ ...addForm, Wed_installment: v })}
-          />
-
-          <TextField
-            label="거래처"
-            value={addForm.Wed_vendor}
-            onChange={(v) => setAddForm({ ...addForm, Wed_vendor: v })}
-          />
-
-          <TextField
-            label="비고"
-            value={addForm.Wed_note}
-            onChange={(v) => setAddForm({ ...addForm, Wed_note: v })}
-          />
-
-          {addErrors.length > 0 && (
-            <InlineError>{addErrors[0]}</InlineError>
-          )}
-
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'flex-end',
-              gap: 'var(--space-sm)',
-            }}
-          >
+      <Modal
+        isOpen={newRowCategory !== null}
+        onClose={handleCancelAdd}
+        title="새 예산 항목"
+        actions={
+          <>
             <PillButton
               variant="secondary"
               onClick={handleCancelAdd}
@@ -535,9 +441,65 @@ export function BudgetItemTable(props: BudgetItemTableProps) {
             >
               저장
             </PillButton>
-          </div>
-        </section>
-      )}
+          </>
+        }
+      >
+        <Select
+          label="카테고리"
+          required
+          value={addForm.Wed_category}
+          onChange={(v) => setAddForm({ ...addForm, Wed_category: v })}
+          options={categories}
+          placeholder="카테고리를 선택해주세요"
+        />
+        <TextField
+          label="항목명"
+          value={addForm.Wed_item_name}
+          onChange={(v) => setAddForm({ ...addForm, Wed_item_name: v })}
+        />
+        <TextField
+          label="상품명"
+          value={addForm.Wed_product_name}
+          onChange={(v) => setAddForm({ ...addForm, Wed_product_name: v })}
+        />
+        <NumberField
+          label="결제금액"
+          required
+          value={addForm.Wed_amount === '' ? null : Number(addForm.Wed_amount)}
+          onChange={(v) =>
+            setAddForm({
+              ...addForm,
+              Wed_amount: v === null ? '' : String(v),
+            })
+          }
+        />
+        <DateField
+          label="결제일"
+          value={addForm.Wed_due_date}
+          onChange={(v) => setAddForm({ ...addForm, Wed_due_date: v })}
+        />
+        <TextField
+          label="결제수단"
+          value={addForm.Wed_pay_method}
+          onChange={(v) => setAddForm({ ...addForm, Wed_pay_method: v })}
+        />
+        <TextField
+          label="할부여부"
+          value={addForm.Wed_installment}
+          onChange={(v) => setAddForm({ ...addForm, Wed_installment: v })}
+        />
+        <TextField
+          label="거래처"
+          value={addForm.Wed_vendor}
+          onChange={(v) => setAddForm({ ...addForm, Wed_vendor: v })}
+        />
+        <TextField
+          label="비고"
+          value={addForm.Wed_note}
+          onChange={(v) => setAddForm({ ...addForm, Wed_note: v })}
+        />
+        {addErrors.length > 0 && <InlineError>{addErrors[0]}</InlineError>}
+      </Modal>
     </div>
   );
 }

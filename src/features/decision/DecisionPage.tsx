@@ -7,6 +7,7 @@ import type { DataTableColumn } from '../../components/DataTable';
 import { ExternalLink } from '../../components/ExternalLink';
 import { TextField } from '../../components/TextField';
 import { NumberField } from '../../components/NumberField';
+import { Modal } from '../../components/Modal';
 import { formatKRW } from '../../lib/format';
 import { normalizeDecision } from '../../lib/normalize';
 import { decisionApi } from './decisionApi';
@@ -15,42 +16,13 @@ import type { DecisionRecord } from './decisionApi';
 /**
  * DecisionPage (task 11.2)
  *
- * Renders the 결정사항 CRUD grid over `Wed_Decision`:
- *   - 항목 · 관계자 · 지출 · 관련링크 · 코멘트 columns (design.md §
- *     Decision_Manager, Requirement 3.1–3.5)
- *   - Link cell renders `<ExternalLink>` when `Wed_link` is a non-empty
- *     string; empty / null renders as plain text with no anchor
- *     (Requirement 3.7 / design § Decision_Manager 렌더링 규칙).
- *   - 지출 cell shows "-" for null and comma-separated KRW otherwise
- *     (Requirement 3.6 · null 저장; 3.5 · 원 단위 정수 표시).
+ * 결정사항 CRUD 페이지. 추가 액션은 팝업 모달(<Modal>) 안에서 처리된다.
  *
- * Add flow:
- *   Clicking the toolbar 추가 button surfaces an inline 5-field form
- *   (항목 / 관계자 / 지출 / 관련링크 / 코멘트) below the table with 저장/취소
- *   controls. Save routes the raw string form through `normalizeDecision`
- *   (Requirement 3.6, Property 14) before calling `decisionApi.create`.
- *
- * State ownership:
- *   - `records`      – current list from `decisionApi.list()`, refetched
- *                      after every successful mutation.
- *   - `errorMsg`     – page-level banner text; cleared on any new attempt,
- *                      set by `<DataTable onError>` when inline
- *                      edit/delete rejects (design § 에러 처리 원칙).
- *   - `newRow`       – null hides the add form; non-null renders it with
- *                      the current raw string values.
- *   - `addErrors`    – user-facing normalize errors surfaced under the
- *                      add form only (do not overwrite page banner).
- *
- * Requirements covered: 3.1, 3.2, 3.3, 3.4, 3.6, 3.7.
+ * 컬럼: 항목 · 관계자 · 지출 · 관련링크 · 코멘트
+ *  - 지출: null → '-', otherwise formatKRW
+ *  - 관련링크: 비어있으면 plain text, 값이 있으면 <ExternalLink>
  */
 
-/**
- * Raw string form state for the "새 결정사항" inline add form.
- *
- * Every field is stored as a `string` here (even numeric 지출) so it can
- * be fed directly to `normalizeDecision`, which encapsulates parsing and
- * validation. Empty strings ("") represent absent optional values.
- */
 type NewRow = {
   Wed_item: string;
   Wed_stakeholder: string;
@@ -67,36 +39,15 @@ const emptyNewRow: NewRow = {
   Wed_comment: '',
 };
 
-/** Nullable string columns used by the inline-edit patch normalizer below. */
-const NULLABLE_STRING_KEYS = [
-  'Wed_stakeholder',
-  'Wed_link',
-  'Wed_comment',
-] as const;
+const NULLABLE_STRING_KEYS = ['Wed_stakeholder', 'Wed_link', 'Wed_comment'] as const;
 
-/**
- * Best-effort user-facing message extraction from an unknown thrown value.
- * Mirrors DataTable's helper so we do not leak `[object Object]` into the
- * error banner.
- */
 function extractMessage(err: unknown): string {
   if (err instanceof Error && err.message) return err.message;
   if (typeof err === 'string' && err.length > 0) return err;
   return '요청을 처리할 수 없습니다.';
 }
 
-/**
- * Normalize a `<DataTable>` inline-edit patch into a shape acceptable to
- * `decisionApi.update`:
- *   - Empty / whitespace-only strings on nullable string columns → `null`.
- *   - `Wed_expense`: empty → `null`; otherwise parsed to a non-negative
- *     integer. A non-parseable value throws so the row stays in edit mode
- *     and `<DataTable>` routes the message to our onError handler
- *     (Requirement 3.5 · 원 단위 정수).
- */
-function normalizeEditPatch(
-  patch: Partial<DecisionRecord>,
-): Partial<DecisionRecord> {
+function normalizeEditPatch(patch: Partial<DecisionRecord>): Partial<DecisionRecord> {
   const normalized: Partial<DecisionRecord> = { ...patch };
 
   for (const key of NULLABLE_STRING_KEYS) {
@@ -123,11 +74,7 @@ function normalizeEditPatch(
         normalized.Wed_expense = null;
       } else {
         const parsed = Number(trimmed);
-        if (
-          !Number.isFinite(parsed) ||
-          !Number.isInteger(parsed) ||
-          parsed < 0
-        ) {
+        if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed < 0) {
           throw new Error('지출은 0 이상의 정수여야 합니다');
         }
         normalized.Wed_expense = parsed;
@@ -145,12 +92,6 @@ export function DecisionPage() {
   const [addErrors, setAddErrors] = useState<string[]>([]);
   const [isSubmittingAdd, setIsSubmittingAdd] = useState(false);
 
-  /**
-   * refetch: pull the authoritative list from Supabase. Any error is
-   * surfaced through the page banner without touching the previous
-   * `records` value (Requirement 2.12 pattern applied to Decision_Manager
-   * per design § 에러 처리 원칙 / Property 17).
-   */
   const refetch = useCallback(async () => {
     try {
       const rows = await decisionApi.list();
@@ -164,10 +105,6 @@ export function DecisionPage() {
     void refetch();
   }, [refetch]);
 
-  /**
-   * Inline-edit save. Re-throws on failure so `<DataTable>` keeps the row
-   * in edit mode and routes the message into `setErrorMsg` via `onError`.
-   */
   const handleSave = useCallback(
     async (id: string, patch: Partial<DecisionRecord>): Promise<void> => {
       setErrorMsg(null);
@@ -213,30 +150,19 @@ export function DecisionPage() {
       await refetch();
       setNewRow(null);
     } catch (err) {
-      setErrorMsg(extractMessage(err));
+      setAddErrors([extractMessage(err)]);
     } finally {
       setIsSubmittingAdd(false);
     }
   }, [newRow, isSubmittingAdd, refetch]);
 
-  /**
-   * Column configuration for the grid. Custom renderers only where the
-   * task-spec calls for domain-specific formatting:
-   *  - 지출: `null` → "-", otherwise `formatKRW`  (Requirement 3.6 / 3.5)
-   *  - 관련링크: `null`/"" → plain text (no anchor); otherwise
-   *              `<ExternalLink>` (Requirement 3.7)
-   *
-   * Other columns rely on `<DataTable>`'s default renderer which
-   * transparently maps `null` → "" for read mode and edit mode.
-   */
   const columns: DataTableColumn<DecisionRecord>[] = [
     { key: 'Wed_item', header: '항목' },
     { key: 'Wed_stakeholder', header: '관계자' },
     {
       key: 'Wed_expense',
       header: '지출',
-      render: (row) =>
-        row.Wed_expense === null ? '-' : formatKRW(row.Wed_expense),
+      render: (row) => (row.Wed_expense === null ? '-' : formatKRW(row.Wed_expense)),
     },
     {
       key: 'Wed_link',
@@ -267,79 +193,12 @@ export function DecisionPage() {
         emptyMessage="등록된 결정사항이 없습니다"
       />
 
-      {newRow !== null && (
-        <section
-          className="decision-add-form"
-          aria-label="새 결정사항"
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 'var(--space-sm)',
-            padding: 'var(--space-lg)',
-            background: 'var(--surface-pearl)',
-            border: '1px solid var(--hairline)',
-            borderRadius: 'var(--rounded-md)',
-          }}
-        >
-          <h2
-            style={{
-              margin: 0,
-              fontSize: 'var(--font-body-strong-size)',
-              fontWeight: 'var(--font-body-strong-weight)',
-              lineHeight: 'var(--font-body-strong-line-height)',
-              color: 'var(--ink)',
-            }}
-          >
-            새 결정사항
-          </h2>
-          <TextField
-            label="항목"
-            required
-            value={newRow.Wed_item}
-            onChange={(v) => setNewRow({ ...newRow, Wed_item: v })}
-          />
-          <TextField
-            label="관계자"
-            value={newRow.Wed_stakeholder}
-            onChange={(v) => setNewRow({ ...newRow, Wed_stakeholder: v })}
-          />
-          <NumberField
-            label="지출"
-            value={newRow.Wed_expense === '' ? null : Number(newRow.Wed_expense)}
-            onChange={(v) =>
-              setNewRow({
-                ...newRow,
-                Wed_expense: v === null ? '' : String(v),
-              })
-            }
-          />
-          <TextField
-            label="관련링크"
-            value={newRow.Wed_link}
-            onChange={(v) => setNewRow({ ...newRow, Wed_link: v })}
-          />
-          <TextField
-            label="코멘트"
-            value={newRow.Wed_comment}
-            onChange={(v) => setNewRow({ ...newRow, Wed_comment: v })}
-          />
-          {addErrors.length > 0 && (
-            <InlineError>{addErrors.join(' · ')}</InlineError>
-          )}
-          <div
-            style={{
-              display: 'flex',
-              gap: 'var(--space-sm)',
-              justifyContent: 'flex-end',
-            }}
-          >
-            <PillButton
-              variant="primary"
-              onClick={handleAddSubmit}
-              disabled={isSubmittingAdd}
-            >
-              저장
-            </PillButton>
+      <Modal
+        isOpen={newRow !== null}
+        onClose={handleAddCancel}
+        title="새 결정사항"
+        actions={
+          <>
             <PillButton
               variant="secondary"
               onClick={handleAddCancel}
@@ -347,9 +206,53 @@ export function DecisionPage() {
             >
               취소
             </PillButton>
-          </div>
-        </section>
-      )}
+            <PillButton
+              variant="primary"
+              onClick={handleAddSubmit}
+              disabled={isSubmittingAdd}
+            >
+              저장
+            </PillButton>
+          </>
+        }
+      >
+        {newRow && (
+          <>
+            <TextField
+              label="항목"
+              required
+              value={newRow.Wed_item}
+              onChange={(v) => setNewRow({ ...newRow, Wed_item: v })}
+            />
+            <TextField
+              label="관계자"
+              value={newRow.Wed_stakeholder}
+              onChange={(v) => setNewRow({ ...newRow, Wed_stakeholder: v })}
+            />
+            <NumberField
+              label="지출"
+              value={newRow.Wed_expense === '' ? null : Number(newRow.Wed_expense)}
+              onChange={(v) =>
+                setNewRow({
+                  ...newRow,
+                  Wed_expense: v === null ? '' : String(v),
+                })
+              }
+            />
+            <TextField
+              label="관련링크"
+              value={newRow.Wed_link}
+              onChange={(v) => setNewRow({ ...newRow, Wed_link: v })}
+            />
+            <TextField
+              label="코멘트"
+              value={newRow.Wed_comment}
+              onChange={(v) => setNewRow({ ...newRow, Wed_comment: v })}
+            />
+            {addErrors.length > 0 && <InlineError>{addErrors.join(' · ')}</InlineError>}
+          </>
+        )}
+      </Modal>
     </PageShell>
   );
 }

@@ -5,6 +5,7 @@ import { InlineError } from '../../components/InlineError';
 import { TextField } from '../../components/TextField';
 import { DataTable } from '../../components/DataTable';
 import type { DataTableColumn } from '../../components/DataTable';
+import { Modal } from '../../components/Modal';
 import { normalizeContact } from '../../lib/normalize';
 import { contactApi } from './contactApi';
 import type { ContactRecord } from './contactApi';
@@ -249,22 +250,12 @@ export function ContactPage() {
         emptyMessage="등록된 연락처가 없습니다"
       />
 
-      {showAdd ? (
-        <div className="contact-add-form" role="dialog" aria-label="연락처 추가">
-          <TextField
-            label="업체"
-            value={company}
-            onChange={setCompany}
-            required
-          />
-          <TextField label="담당자" value={manager} onChange={setManager} />
-          <TextField label="전화번호" value={phone} onChange={setPhone} />
-          <TextField label="이메일" value={email} onChange={setEmail} />
-          <TextField label="비고" value={note} onChange={setNote} />
-
-          <InlineError>{addError}</InlineError>
-
-          <div className="contact-add-form-actions">
+      <Modal
+        isOpen={showAdd}
+        onClose={handleAddCancel}
+        title="연락처 추가"
+        actions={
+          <>
             <PillButton
               variant="secondary"
               onClick={handleAddCancel}
@@ -279,9 +270,16 @@ export function ContactPage() {
             >
               저장
             </PillButton>
-          </div>
-        </div>
-      ) : null}
+          </>
+        }
+      >
+        <TextField label="업체" value={company} onChange={setCompany} required />
+        <TextField label="담당자" value={manager} onChange={setManager} />
+        <TextField label="전화번호" value={phone} onChange={setPhone} />
+        <TextField label="이메일" value={email} onChange={setEmail} />
+        <TextField label="비고" value={note} onChange={setNote} />
+        <InlineError>{addError}</InlineError>
+      </Modal>
     </PageShell>
   );
 }

@@ -125,16 +125,15 @@ export function SchedulePage() {
         onError={setErrorMsg}
       />
 
-      {showAddForm && (
-        <AddScheduleForm
-          initialDate={selectedDate ?? ''}
-          onSave={async () => {
-            await refetch();
-            setShowAddForm(false);
-          }}
-          onCancel={() => setShowAddForm(false)}
-        />
-      )}
+      <AddScheduleForm
+        isOpen={showAddForm}
+        initialDate={selectedDate ?? ''}
+        onSave={async () => {
+          await refetch();
+          setShowAddForm(false);
+        }}
+        onCancel={() => setShowAddForm(false)}
+      />
     </PageShell>
   );
 }
