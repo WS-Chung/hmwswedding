@@ -29,6 +29,8 @@ export interface CalendarGridProps {
   selectedDate?: string | null;
   /** 셀 클릭 시 호출되는 콜백. */
   onSelectDate: (iso: string) => void;
+  /** 셀 더블클릭 시 호출되는 콜백(일정 추가 트리거). */
+  onActivateDate?: (iso: string) => void;
 }
 
 /** "YYYY-MM-DD" → 1..31 정수. */
@@ -41,6 +43,7 @@ export function CalendarGrid({
   highlightedDates,
   selectedDate = null,
   onSelectDate,
+  onActivateDate,
 }: CalendarGridProps) {
   return (
     <div>
@@ -63,6 +66,7 @@ export function CalendarGrid({
               type="button"
               className={classes.join(' ')}
               onClick={() => onSelectDate(cell.iso)}
+              onDoubleClick={() => onActivateDate?.(cell.iso)}
               aria-label={cell.iso}
               aria-pressed={selectedDate === cell.iso}
             >

@@ -4,7 +4,6 @@ import { CalendarGrid } from '../../components/CalendarGrid';
 import { CalendarHeader } from '../../components/CalendarHeader';
 import { InlineError } from '../../components/InlineError';
 import { PageShell } from '../../components/PageShell';
-import { PillButton } from '../../components/PillButton';
 import {
   DEFAULT_MONTH,
   computeHighlightedDates,
@@ -83,6 +82,15 @@ export function SchedulePage() {
     setCurrentMonth((m) => shiftMonth(m, delta));
   }, []);
 
+  /**
+   * 달력 셀 더블클릭 시 호출된다. 해당 날짜를 선택 상태로 만들고 일정 추가
+   * 모달을 연다(Requirement 2.8-a — 선택 날짜가 폼에 프리필된다).
+   */
+  const handleActivateDate = useCallback((iso: string) => {
+    setSelectedDate(iso);
+    setShowAddForm(true);
+  }, []);
+
   // 7의 배수 길이 셀 배열 (leading/trailing 셀 포함).
   const days = useMemo(
     () => monthGridDays(currentMonth.year, currentMonth.month),
@@ -97,33 +105,37 @@ export function SchedulePage() {
   );
 
   return (
-    <PageShell
-      title="일정"
-      toolbar={
-        <PillButton onClick={() => setShowAddForm(true)}>일정 추가</PillButton>
-      }
-    >
-      <CalendarHeader
-        year={currentMonth.year}
-        month={currentMonth.month}
-        onChangeMonth={handleChangeMonth}
-      />
-
-      <CalendarGrid
-        days={days}
-        highlightedDates={highlightedDates}
-        selectedDate={selectedDate}
-        onSelectDate={setSelectedDate}
-      />
-
+    <PageShell title="일정" className="page-wide">
       {errorMsg && <InlineError>{errorMsg}</InlineError>}
 
-      <DaySchedulesPanel
-        selectedDate={selectedDate}
-        records={records}
-        onMutate={refetch}
-        onError={setErrorMsg}
-      />
+      <div className="schedule-layout">
+        <div className="schedule-calendar">
+          <CalendarHeader
+            year={currentMonth.year}
+            month={currentMonth.month}
+            onChangeMonth={handleChangeMonth}
+          />
+
+          <CalendarGrid
+            days={days}
+            highlightedDates={highlightedDates}
+            selectedDate={selectedDate}
+            onSelectDate={setSelectedDate}
+            onActivateDate={handleActivateDate}
+          />
+
+          <p className="schedule-hint">날짜를 더블클릭하면 일정을 추가할 수 있습니다.</p>
+        </div>
+
+        <div className="schedule-detail">
+          <DaySchedulesPanel
+            selectedDate={selectedDate}
+            records={records}
+            onMutate={refetch}
+            onError={setErrorMsg}
+          />
+        </div>
+      </div>
 
       <AddScheduleForm
         isOpen={showAddForm}

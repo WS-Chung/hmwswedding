@@ -44,7 +44,21 @@ export interface DataTableColumn<T> {
     patch: Partial<T>,
     setPatch: (p: Partial<T>) => void,
   ) => ReactNode;
+  /**
+   * Optional fixed column width (any CSS length, e.g. "140px"). Applied via a
+   * `<col>` so both the header and body cells share the same width. Columns
+   * without a width share the remaining space.
+   */
+  width?: string;
+  /**
+   * Set `false` to disable click-to-sort on this column's header. Defaults to
+   * sortable (true).
+   */
+  sortable?: boolean;
 }
+
+/** 현재 정렬 방향. */
+type SortDir = 'asc' | 'desc';
 
 export interface DataTableProps<T extends { Wed_id: string }> {
   rows: T[];
@@ -81,6 +95,31 @@ function extractMessage(err: unknown): string {
   return '요청을 처리할 수 없습니다.';
 }
 
+/**
+ * 두 셀 값을 정렬용으로 비교한다(오름차순 기준).
+ *  - null / undefined / 빈 문자열은 항상 뒤로 보낸다.
+ *  - 두 값이 모두 숫자로 파싱되면 수치 비교(결제금액 등).
+ *  - 그 외에는 한국어 로케일 문자열 비교(날짜 ISO 문자열은 사전식=시간순).
+ */
+function compareValues(a: unknown, b: unknown): number {
+  const aEmpty = a === null || a === undefined || a === '';
+  const bEmpty = b === null || b === undefined || b === '';
+  if (aEmpty && bEmpty) return 0;
+  if (aEmpty) return 1;
+  if (bEmpty) return -1;
+
+  if (typeof a === 'number' && typeof b === 'number') return a - b;
+
+  const as = String(a);
+  const bs = String(b);
+  const an = Number(as);
+  const bn = Number(bs);
+  if (as.trim() !== '' && bs.trim() !== '' && !Number.isNaN(an) && !Number.isNaN(bn)) {
+    return an - bn;
+  }
+  return as.localeCompare(bs, 'ko');
+}
+
 export function DataTable<T extends { Wed_id: string }>(
   props: DataTableProps<T>,
 ) {
@@ -100,6 +139,34 @@ export function DataTable<T extends { Wed_id: string }>(
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // 컬럼 헤더 클릭 정렬 상태. null이면 부모가 넘긴 순서를 그대로 사용한다.
+  const [sortKey, setSortKey] = useState<string | null>(null);
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
+
+  /**
+   * 헤더 클릭 시 정렬 상태를 순환시킨다: 미정렬 → 오름차순 → 내림차순 → 미정렬.
+   */
+  function toggleSort(key: string): void {
+    if (sortKey !== key) {
+      setSortKey(key);
+      setSortDir('asc');
+    } else if (sortDir === 'asc') {
+      setSortDir('desc');
+    } else {
+      setSortKey(null);
+      setSortDir('asc');
+    }
+  }
+
+  // 표시용 정렬 행. 편집 중에도 안정적으로 동작하도록 얕은 복사 후 정렬한다.
+  const displayRows =
+    sortKey === null
+      ? rows
+      : [...rows].sort((ra, rb) => {
+          const cmp = compareValues(readCell(ra, sortKey), readCell(rb, sortKey));
+          return sortDir === 'asc' ? cmp : -cmp;
+        });
 
   function beginEdit(row: T) {
     // Only one row may be in edit mode at a time (design constraint).
@@ -172,27 +239,59 @@ export function DataTable<T extends { Wed_id: string }>(
       ) : null}
 
       <table className="data-table">
+        <colgroup>
+          {columns.map((col) => (
+            <col
+              key={String(col.key)}
+              style={col.width ? { width: col.width } : undefined}
+            />
+          ))}
+          <col className="data-table-actions-col" />
+        </colgroup>
         <thead>
           <tr>
-            {columns.map((col) => (
-              <th key={String(col.key)} scope="col">
-                {col.header}
-              </th>
-            ))}
+            {columns.map((col) => {
+              const key = String(col.key);
+              const isSortable = col.sortable !== false;
+              const isActive = sortKey === key;
+              const ariaSort = !isActive
+                ? undefined
+                : sortDir === 'asc'
+                  ? 'ascending'
+                  : 'descending';
+              return (
+                <th key={key} scope="col" aria-sort={ariaSort}>
+                  {isSortable ? (
+                    <button
+                      type="button"
+                      className="data-table-sort-button"
+                      onClick={() => toggleSort(key)}
+                    >
+                      {col.header}
+                      <span className="data-table-sort-caret" aria-hidden="true">
+                        {isActive ? (sortDir === 'asc' ? '▲' : '▼') : '↕'}
+                      </span>
+                    </button>
+                  ) : (
+                    col.header
+                  )}
+                </th>
+              );
+            })}
             <th scope="col" className="data-table-actions-header">
               <span className="visually-hidden">작업</span>
             </th>
           </tr>
         </thead>
         <tbody>
-          {rows.length === 0 ? (
+          {displayRows.length === 0 ? (
             <tr>
               <td colSpan={columnCount} className="data-table-empty">
                 {emptyMessage}
               </td>
             </tr>
           ) : (
-            rows.map((row) => {
+            displayRows.map((row) => {
               const isEditing = editingId === row.Wed_id;
               return (
                 <tr key={row.Wed_id} data-row-id={row.Wed_id}>
@@ -274,7 +373,7 @@ export function DataTable<T extends { Wed_id: string }>(
                             editingId !== null && editingId !== row.Wed_id
                           }
                         >
-                          연필
+                          ✏️
                         </button>
                         <button
                           type="button"
@@ -284,7 +383,7 @@ export function DataTable<T extends { Wed_id: string }>(
                           onClick={() => requestDelete(row)}
                           disabled={editingId !== null}
                         >
-                          🗑
+                          🗑️
                         </button>
                       </>
                     )}

@@ -120,14 +120,41 @@ describe('DateField', () => {
 });
 
 describe('TimeField', () => {
-  it('renders type="time" with the HH:MM value verbatim', () => {
+  it('splits an HH:MM value into the 시 / 분 dropdowns', () => {
     const onChange = vi.fn();
     render(<TimeField label="시간" value="14:30" onChange={onChange} id="t" />);
-    const input = screen.getByLabelText('시간') as HTMLInputElement;
-    expect(input.type).toBe('time');
-    expect(input.value).toBe('14:30');
-    fireEvent.change(input, { target: { value: '09:00' } });
-    expect(onChange).toHaveBeenCalledWith('09:00');
+    const hour = screen.getByLabelText('시간 시') as HTMLSelectElement;
+    const minute = screen.getByLabelText('시간 분') as HTMLSelectElement;
+    expect(hour.value).toBe('14');
+    expect(minute.value).toBe('30');
+  });
+
+  it('emits HH:MM only once both 시 and 분 are chosen', () => {
+    const onChange = vi.fn();
+    render(<TimeField label="시간" value="" onChange={onChange} id="t" />);
+    const hour = screen.getByLabelText('시간 시') as HTMLSelectElement;
+    fireEvent.change(hour, { target: { value: '09' } });
+    // 분이 아직 비어 있으면 빈 문자열을 방출한다(저장 게이트가 막도록).
+    expect(onChange).toHaveBeenLastCalledWith('');
+    const minute = screen.getByLabelText('시간 분') as HTMLSelectElement;
+    fireEvent.change(minute, { target: { value: '00' } });
+    expect(onChange).toHaveBeenLastCalledWith('09:00');
+  });
+
+  it('offers only 15-minute increments in 24-hour form', () => {
+    render(<TimeField label="시간" value="" onChange={vi.fn()} id="t" />);
+    const hour = screen.getByLabelText('시간 시') as HTMLSelectElement;
+    const minute = screen.getByLabelText('시간 분') as HTMLSelectElement;
+    const hourValues = Array.from(hour.options)
+      .map((o) => o.value)
+      .filter((v) => v !== '');
+    const minuteValues = Array.from(minute.options)
+      .map((o) => o.value)
+      .filter((v) => v !== '');
+    expect(hourValues[0]).toBe('00');
+    expect(hourValues[hourValues.length - 1]).toBe('23');
+    expect(hourValues).toHaveLength(24);
+    expect(minuteValues).toEqual(['00', '15', '30', '45']);
   });
 });
 

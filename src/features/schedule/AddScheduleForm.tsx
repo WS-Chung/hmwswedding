@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DateField } from '../../components/DateField';
 import { TextField } from '../../components/TextField';
 import { TimeField } from '../../components/TimeField';
@@ -46,6 +46,22 @@ export function AddScheduleForm({ isOpen, initialDate, onSave, onCancel }: AddSc
   const [note, setNote] = useState<string>('');
   const [submitting, setSubmitting] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+
+  /**
+   * 모달이 열릴 때마다 폼을 초기화한다. 특히 날짜 필드는 캘린더에서 선택/더블클릭한
+   * 날짜(`initialDate`)로 프리필되어야 하므로(Requirement 2.8-a), `isOpen`이
+   * true로 전환되는 시점에 `initialDate`를 반영한다.
+   */
+  useEffect(() => {
+    if (isOpen) {
+      setDate(initialDate ?? '');
+      setPlace('');
+      setTime('');
+      setSchedule('');
+      setNote('');
+      setError('');
+    }
+  }, [isOpen, initialDate]);
 
   async function handleSave() {
     if (submitting) return;

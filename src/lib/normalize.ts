@@ -230,12 +230,11 @@ export function normalizeDecision(
 export type BudgetItemFormInput = {
   Wed_category?: string;
   Wed_item_name?: string;
-  Wed_product_name?: string;
+  Wed_payer?: string;
   /** Numeric text ("120000") — parsed to a non-negative integer in the payload. */
   Wed_amount?: string;
   Wed_due_date?: string;
   Wed_pay_method?: string;
-  Wed_installment?: string;
   Wed_vendor?: string;
   Wed_note?: string;
 };
@@ -244,11 +243,10 @@ export type BudgetItemFormInput = {
 export type NormalizedBudgetItem = {
   Wed_category: string;
   Wed_item_name: string | null;
-  Wed_product_name: string | null;
+  Wed_payer: string | null;
   Wed_amount: number;
   Wed_due_date: string | null;
   Wed_pay_method: string | null;
-  Wed_installment: string | null;
   Wed_vendor: string | null;
   Wed_note: string | null;
 };
@@ -268,11 +266,10 @@ export function normalizeBudgetItem(
 ): NormalizeResult<NormalizedBudgetItem> {
   const category = readField(input.Wed_category);
   const itemName = readField(input.Wed_item_name);
-  const productName = readField(input.Wed_product_name);
+  const payer = readField(input.Wed_payer);
   const amountRaw = readField(input.Wed_amount);
   const dueDate = readField(input.Wed_due_date);
   const payMethod = readField(input.Wed_pay_method);
-  const installment = readField(input.Wed_installment);
   const vendor = readField(input.Wed_vendor);
   const note = readField(input.Wed_note);
 
@@ -300,11 +297,10 @@ export function normalizeBudgetItem(
     value: {
       Wed_category: category,
       Wed_item_name: emptyToNull(itemName),
-      Wed_product_name: emptyToNull(productName),
+      Wed_payer: emptyToNull(payer),
       Wed_amount: amount,
       Wed_due_date: emptyToNull(dueDate),
       Wed_pay_method: emptyToNull(payMethod),
-      Wed_installment: emptyToNull(installment),
       Wed_vendor: emptyToNull(vendor),
       Wed_note: emptyToNull(note),
     },

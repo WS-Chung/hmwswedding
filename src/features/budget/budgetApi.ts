@@ -30,12 +30,11 @@ import { mapSupabaseError } from '../../lib/errorMapping';
  *                          하드 FK 없이 애플리케이션 레이어에서 참조 무결성을
  *                          강제한다(design.md § DB 참조 무결성 노트).
  *   - `Wed_item_name`    : 항목명 (선택, 빈 값은 null).
- *   - `Wed_product_name` : 상품명 (선택, 빈 값은 null).
+ *   - `Wed_payer`        : 결제자 (선택, '혜민' | '운석' | null).
  *   - `Wed_amount`       : 결제금액. 0 이상 정수, 필수(Requirement 5.9).
  *                          DB의 CHECK 제약(`>= 0`)이 이중 안전망 역할을 한다.
  *   - `Wed_due_date`     : 결제(예정)일 "YYYY-MM-DD" 또는 null (DATE).
  *   - `Wed_pay_method`   : 결제수단 (선택).
- *   - `Wed_installment`  : 할부여부/개월 표기 (선택, 자유 형식 문자열).
  *   - `Wed_vendor`       : 거래처 (선택).
  *   - `Wed_note`         : 비고 (선택).
  *   - `Wed_created_at`   : 생성 시각 (서버 default `now()`).
@@ -44,11 +43,10 @@ export type BudgetItem = {
   Wed_id: string;
   Wed_category: string;
   Wed_item_name: string | null;
-  Wed_product_name: string | null;
+  Wed_payer: string | null;
   Wed_amount: number;
   Wed_due_date: string | null;
   Wed_pay_method: string | null;
-  Wed_installment: string | null;
   Wed_vendor: string | null;
   Wed_note: string | null;
   Wed_created_at: string;

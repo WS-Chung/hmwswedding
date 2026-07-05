@@ -54,11 +54,10 @@ create table if not exists "Wed_Budget_Item" (
   "Wed_id"           uuid        primary key default gen_random_uuid(),
   "Wed_category"     text        not null,
   "Wed_item_name"    text        null,
-  "Wed_product_name" text        null,
+  "Wed_payer"        text        null,
   "Wed_amount"       numeric     not null check ("Wed_amount" >= 0),
   "Wed_due_date"     date        null,
   "Wed_pay_method"   text        null,
-  "Wed_installment"  text        null,
   "Wed_vendor"       text        null,
   "Wed_note"         text        null,
   "Wed_created_at"   timestamptz not null default now()
@@ -132,3 +131,16 @@ begin
     );
   end loop;
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- 마이그레이션 (이미 배포된 DB용).
+--   `create table if not exists`는 기존 테이블 컬럼을 변경하지 않으므로,
+--   운영 중인 Supabase에 아래 ALTER 문을 실행해 스키마를 최신화한다.
+--   모두 idempotent(재실행 안전)하다.
+--     - 상품명(Wed_product_name) 제거      → 항목명만 유지
+--     - 할부여부(Wed_installment) 제거
+--     - 결제자(Wed_payer) 추가             → 값은 앱에서 '혜민' | '운석'로 제한
+-- ---------------------------------------------------------------------------
+alter table "Wed_Budget_Item" add    column if not exists "Wed_payer" text null;
+alter table "Wed_Budget_Item" drop   column if exists     "Wed_product_name";
+alter table "Wed_Budget_Item" drop   column if exists     "Wed_installment";

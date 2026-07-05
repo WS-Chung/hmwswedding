@@ -54,9 +54,9 @@ describe('SideNavigation', () => {
     expect(contact).toHaveAttribute('href', '/contact');
   });
 
-  it('renders the "Wedding Planner" app title heading', () => {
+  it('renders the "결혼준비" app title heading', () => {
     renderAt('/');
-    const heading = screen.getByRole('heading', { level: 1, name: 'Wedding Planner' });
+    const heading = screen.getByRole('heading', { level: 1, name: '결혼준비' });
     expect(heading).toBeInTheDocument();
     expect(heading).toHaveClass('side-nav-title');
   });

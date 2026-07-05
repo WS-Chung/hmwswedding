@@ -51,7 +51,7 @@ const NAV_ITEMS: readonly NavItem[] = [
 export function SideNavigation() {
   return (
     <nav className="side-navigation" aria-label="주 메뉴">
-      <h1 className="side-nav-title">Wedding Planner</h1>
+      <h1 className="side-nav-title">결혼준비</h1>
       <ul className="side-nav-links" role="list">
         {NAV_ITEMS.map((item) => (
           <li key={item.to}>

@@ -287,8 +287,17 @@ a:focus-visible {
 
 .page {
   padding: var(--space-section) var(--space-xxl);
-  max-width: 1200px;
+  max-width: 1600px;
   margin: 0 auto;
+}
+
+/*
+ * .page-wide — 일정 페이지처럼 가로 공간을 최대로 활용해야 하는 화면.
+ * max-width 제한을 없애 사이드바(240px) + 메인 영역이 뷰포트 전체를 채운다
+ * (1920 기준 사이드바 포함 90% 이상 · 사용자 요구 1·4).
+ */
+.page-wide {
+  max-width: none;
 }
 
 .page-header {
@@ -981,4 +990,127 @@ a:focus-visible {
 
 .page {
   animation: routeFadeIn 0.28s ease-out;
+}
+
+/* -----------------------------------------------------------------
+ * Schedule 페이지 2단 레이아웃 (사용자 요구 1).
+ *
+ * 좌측(달력)은 메인 영역의 약 1/4, 우측(선택 날짜 상세)은 3/4를 차지한다.
+ * FHD 미만/모바일에서는 상하로 스택된다(사용자 요구 4).
+ * ----------------------------------------------------------------- */
+
+.schedule-layout {
+  display: flex;
+  gap: var(--space-xl);
+  align-items: flex-start;
+}
+
+.schedule-calendar {
+  flex: 0 0 25%;
+  min-width: 300px;
+}
+
+.schedule-detail {
+  flex: 1 1 75%;
+  min-width: 0;
+}
+
+.schedule-hint {
+  margin-top: var(--space-sm);
+  font-family: var(--font-text);
+  font-size: var(--font-caption-size);
+  line-height: var(--font-caption-line-height);
+  letter-spacing: var(--font-caption-letter-spacing);
+  color: var(--ink-muted-48);
+}
+
+.day-schedules-panel > h2 {
+  font-family: var(--font-display-md-family);
+  font-size: var(--font-body-strong-size);
+  font-weight: var(--font-body-strong-weight);
+  line-height: var(--font-body-strong-line-height);
+  color: var(--ink);
+  margin-bottom: var(--space-sm);
+}
+
+.day-schedules-placeholder {
+  color: var(--ink-muted-48);
+  padding: var(--space-lg) 0;
+}
+
+/* FHD 미만에서는 달력/상세를 상하로 스택. */
+@media (max-width: 1024px) {
+  .schedule-layout {
+    flex-direction: column;
+  }
+
+  .schedule-calendar,
+  .schedule-detail {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+  }
+}
+
+/* -----------------------------------------------------------------
+ * TimeField — 시 / 분 드롭다운 (사용자 요구 3).
+ * ----------------------------------------------------------------- */
+
+.time-field-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.time-field-select {
+  flex: 0 0 auto;
+  min-width: 84px;
+}
+
+.time-field-sep {
+  color: var(--ink-muted-48);
+  font-size: var(--font-body-size);
+}
+
+/* -----------------------------------------------------------------
+ * DataTable — 정렬 가능한 헤더 버튼 + 액션 컬럼 폭 (사용자 요구 5·9·12).
+ * ----------------------------------------------------------------- */
+
+/* 넓은 표는 좁은 화면에서 가로 스크롤로 흘려보낸다(사용자 요구 4). */
+.data-table-wrapper {
+  overflow-x: auto;
+}
+
+.data-table-sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+.data-table-sort-button:hover {
+  color: var(--primary);
+}
+
+.data-table-sort-button:focus-visible {
+  outline: 2px solid var(--primary-focus);
+  outline-offset: 2px;
+  border-radius: var(--rounded-xs);
+}
+
+.data-table-sort-caret {
+  font-size: 10px;
+  color: var(--ink-muted-48);
+  line-height: 1;
+}
+
+/* 편집/삭제 아이콘 버튼 두 개가 겹치지 않도록 액션 컬럼 폭 확보(사용자 요구 5). */
+.data-table-actions-col {
+  width: 104px;
 }

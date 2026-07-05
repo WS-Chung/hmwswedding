@@ -36,8 +36,7 @@ import type { BudgetItem, BudgetItemUpdatePatch } from './budgetApi';
  *        - 우측 정렬 "항목 추가" PillButton
  *        - `<DataTable>`에 그 그룹의 항목을 표시(카테고리 열은 포함하지 않음 —
  *          섹션 헤더가 이미 카테고리를 시각적으로 담당). 열 순서:
- *          항목명 · 상품명 · 결제금액 · 결제일 · 결제수단 · 할부여부 ·
- *          거래처 · 비고.
+ *          항목명 · 결제자 · 결제금액 · 결제일 · 결제수단 · 거래처 · 비고.
  *        - 결제금액 열은 `formatKRW`로 표시(Requirement 7.7 스타일).
  *   3) 마스터 목록(`categories`)에 존재하지 않는 카테고리를 가진 스트랜디드
  *      항목이 있으면 "기타(미분류)" 섹션 대신 원본 카테고리명 그대로 각각의
@@ -96,25 +95,26 @@ export interface BudgetItemTableProps {
 type AddFormState = {
   Wed_category: string;
   Wed_item_name: string;
-  Wed_product_name: string;
+  Wed_payer: string;
   Wed_amount: string;
   Wed_due_date: string;
   Wed_pay_method: string;
-  Wed_installment: string;
   Wed_vendor: string;
   Wed_note: string;
 };
+
+/** 결제자 드롭다운 옵션(고정 2인). */
+const PAYER_OPTIONS = ['혜민', '운석'] as const;
 
 /** 빈 폼 초기값. `Wed_category`는 `newRowCategory`가 open 시 별도로 채운다. */
 function emptyAddForm(category: string): AddFormState {
   return {
     Wed_category: category,
     Wed_item_name: '',
-    Wed_product_name: '',
+    Wed_payer: '',
     Wed_amount: '',
     Wed_due_date: '',
     Wed_pay_method: '',
-    Wed_installment: '',
     Wed_vendor: '',
     Wed_note: '',
   };
@@ -134,10 +134,9 @@ function extractMessage(err: unknown): string {
 /** 인라인 편집에서 nullable string으로 사상되는 컬럼 이름 목록. */
 const NULLABLE_STRING_KEYS = [
   'Wed_item_name',
-  'Wed_product_name',
+  'Wed_payer',
   'Wed_due_date',
   'Wed_pay_method',
-  'Wed_installment',
   'Wed_vendor',
   'Wed_note',
 ] as const;
@@ -318,43 +317,69 @@ export function BudgetItemTable(props: BudgetItemTableProps) {
     {
       key: 'Wed_item_name',
       header: '항목명',
+      width: '160px',
       render: (row) => (row.Wed_item_name === null ? '' : row.Wed_item_name),
     },
     {
-      key: 'Wed_product_name',
-      header: '상품명',
-      render: (row) =>
-        row.Wed_product_name === null ? '' : row.Wed_product_name,
+      key: 'Wed_payer',
+      header: '결제자',
+      width: '90px',
+      render: (row) => (row.Wed_payer === null ? '' : row.Wed_payer),
+      renderEdit: (row, patch, setPatch) => {
+        const current =
+          'Wed_payer' in patch
+            ? ((patch.Wed_payer as string | null) ?? '')
+            : (row.Wed_payer ?? '');
+        return (
+          <select
+            className="field-input data-table-edit-input"
+            aria-label="결제자"
+            value={current}
+            onChange={(e) =>
+              setPatch({
+                ...patch,
+                Wed_payer: e.target.value === '' ? null : e.target.value,
+              } as Partial<BudgetItem>)
+            }
+          >
+            <option value="">-</option>
+            {PAYER_OPTIONS.map((p) => (
+              <option key={p} value={p}>
+                {p}
+              </option>
+            ))}
+          </select>
+        );
+      },
     },
     {
       key: 'Wed_amount',
       header: '결제금액',
+      width: '130px',
       render: (row) => formatKRW(row.Wed_amount),
     },
     {
       key: 'Wed_due_date',
       header: '결제일',
+      width: '120px',
       render: (row) => (row.Wed_due_date === null ? '' : row.Wed_due_date),
     },
     {
       key: 'Wed_pay_method',
       header: '결제수단',
+      width: '110px',
       render: (row) => (row.Wed_pay_method === null ? '' : row.Wed_pay_method),
-    },
-    {
-      key: 'Wed_installment',
-      header: '할부여부',
-      render: (row) =>
-        row.Wed_installment === null ? '' : row.Wed_installment,
     },
     {
       key: 'Wed_vendor',
       header: '거래처',
+      width: '120px',
       render: (row) => (row.Wed_vendor === null ? '' : row.Wed_vendor),
     },
     {
       key: 'Wed_note',
       header: '비고',
+      width: '320px',
       render: (row) => (row.Wed_note === null ? '' : row.Wed_note),
     },
   ];
@@ -457,10 +482,12 @@ export function BudgetItemTable(props: BudgetItemTableProps) {
           value={addForm.Wed_item_name}
           onChange={(v) => setAddForm({ ...addForm, Wed_item_name: v })}
         />
-        <TextField
-          label="상품명"
-          value={addForm.Wed_product_name}
-          onChange={(v) => setAddForm({ ...addForm, Wed_product_name: v })}
+        <Select
+          label="결제자"
+          value={addForm.Wed_payer}
+          onChange={(v) => setAddForm({ ...addForm, Wed_payer: v })}
+          options={PAYER_OPTIONS}
+          placeholder="결제자를 선택해주세요"
         />
         <NumberField
           label="결제금액"
@@ -482,11 +509,6 @@ export function BudgetItemTable(props: BudgetItemTableProps) {
           label="결제수단"
           value={addForm.Wed_pay_method}
           onChange={(v) => setAddForm({ ...addForm, Wed_pay_method: v })}
-        />
-        <TextField
-          label="할부여부"
-          value={addForm.Wed_installment}
-          onChange={(v) => setAddForm({ ...addForm, Wed_installment: v })}
         />
         <TextField
           label="거래처"
