@@ -1247,4 +1247,13 @@ input[type='number'] {
   .budget-summary {
     flex-direction: column;
   }
+
+  /*
+   * 일정 페이지: 모바일에서는 달력을 맨 위, 일별 스케줄을 그 아래로 배치한다.
+   * (데스크탑은 테이블 좌측·달력 우측 유지 — JSX 순서는 그대로 두고 order만
+   *  뒤집는다.)
+   */
+  .schedule-calendar {
+    order: -1;
+  }
 }
