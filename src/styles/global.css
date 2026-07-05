@@ -1,0 +1,888 @@
+/*
+ * Global reset and body defaults for Wedding Planner.
+ *
+ * Depends on tokens defined in ./tokens.css — that file MUST be imported
+ * before this one in src/main.tsx so the CSS custom properties resolve.
+ *
+ * Requirements covered:
+ *  - 10.1 body inherits the SF Pro Text / system-ui font stack via --font-text
+ *  - 10.3 body background uses --canvas (#ffffff) with parchment (#f5f5f7)
+ *         available on containers via .surface-parchment
+ *  - 10.4 body text color is --ink (#1d1d1f)
+ */
+
+/* -----------------------------------------------------------------
+ * Minimal reset — box-sizing, margin/padding zero, media block level
+ * ----------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+h1, h2, h3, h4, h5, h6,
+p, ul, ol, figure, blockquote,
+dl, dd {
+  margin: 0;
+  padding: 0;
+}
+
+ul[role="list"],
+ol[role="list"] {
+  list-style: none;
+}
+
+img,
+picture,
+svg,
+video,
+canvas {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+/* -----------------------------------------------------------------
+ * Root layout — full viewport with system-driven text rendering.
+ * ----------------------------------------------------------------- */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  height: 100%;
+}
+
+body {
+  min-height: 100%;
+  font-family: var(--font-text);
+  font-size:   var(--font-body-size);
+  font-weight: var(--font-body-weight);
+  line-height: var(--font-body-line-height);
+  letter-spacing: var(--font-body-letter-spacing);
+  color: var(--ink);            /* Requirement 10.4 */
+  background: var(--canvas);    /* Requirement 10.3 */
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* -----------------------------------------------------------------
+ * Headings default to the SF Pro Display stack; component styles
+ * later override with specific typography tokens as needed.
+ * ----------------------------------------------------------------- */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  color: var(--ink);
+}
+
+/* -----------------------------------------------------------------
+ * Links — quiet Action Blue by default, no underline until hover.
+ * ----------------------------------------------------------------- */
+
+a {
+  color: var(--primary);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+a:focus-visible {
+  outline: 2px solid var(--primary-focus);
+  outline-offset: 2px;
+  border-radius: var(--rounded-xs);
+}
+
+/* -----------------------------------------------------------------
+ * Surface helpers — used by PageShell and section containers.
+ * ----------------------------------------------------------------- */
+
+.surface-parchment {
+  background: var(--canvas-parchment);
+}
+
+.surface-canvas {
+  background: var(--canvas);
+}
+
+/* -----------------------------------------------------------------
+ * Pill buttons — used by <PillButton>.
+ *
+ * design.md § "UI/디자인 시스템 매핑" defines both variants; the classes
+ * live here (not in a component-scoped stylesheet) so the design task can
+ * validate computed styles via a global CSS render.
+ *
+ * Requirement 10.5: primary CTA border-radius is --rounded-pill = 9999px.
+ * Requirement 10.2: primary background is --primary = #0066cc.
+ * ----------------------------------------------------------------- */
+
+.pill-primary {
+  background: var(--primary);
+  color: var(--on-primary);
+  border: 0;
+  border-radius: var(--rounded-pill);
+  padding: 11px 22px;
+  font-family: var(--font-text);
+  font-size: 17px;
+  line-height: 1.24;
+  letter-spacing: -0.374px;
+  cursor: pointer;
+  transition: transform 0.08s ease, opacity 0.15s ease;
+}
+
+.pill-primary:hover:not(:disabled) {
+  opacity: 0.92;
+}
+
+.pill-primary:focus-visible {
+  outline: 2px solid var(--primary-focus);
+  outline-offset: 2px;
+}
+
+.pill-primary:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.pill-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.pill-secondary {
+  background: transparent;
+  color: var(--primary);
+  border: 1px solid var(--primary);
+  border-radius: var(--rounded-pill);
+  padding: 11px 22px;
+  font-family: var(--font-text);
+  font-size: 17px;
+  line-height: 1.24;
+  letter-spacing: -0.374px;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.pill-secondary:hover:not(:disabled) {
+  background: rgba(0, 102, 204, 0.06);
+}
+
+.pill-secondary:focus-visible {
+  outline: 2px solid var(--primary-focus);
+  outline-offset: 2px;
+}
+
+.pill-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* -----------------------------------------------------------------
+ * Form fields — used by <TextField>, <NumberField>, <DateField>,
+ * <TimeField>.
+ *
+ * `.field` is a vertical stack (label · input · optional inline error).
+ * The input reuses `--rounded-md` (11px) per design.md §
+ * "공통 컴포넌트" and adopts `--primary-focus` for the focus ring so
+ * keyboard focus remains visible on every surface.
+ * ----------------------------------------------------------------- */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+  margin-bottom: var(--space-sm);
+}
+
+.field-label {
+  font-family: var(--font-text);
+  font-size: var(--font-caption-strong-size);
+  font-weight: var(--font-caption-strong-weight);
+  line-height: var(--font-caption-strong-line-height);
+  letter-spacing: var(--font-caption-strong-letter-spacing);
+  color: var(--ink);
+}
+
+.field-input {
+  font-family: var(--font-text);
+  font-size: var(--font-body-size);
+  line-height: var(--font-body-line-height);
+  color: var(--ink);
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+  border-radius: var(--rounded-md);
+  padding: 10px 12px;
+  min-height: 40px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.field-input:hover:not(:disabled) {
+  border-color: var(--ink-muted-48);
+}
+
+.field-input:focus-visible {
+  outline: none;
+  border-color: var(--primary-focus);
+  box-shadow: 0 0 0 2px var(--primary-focus);
+}
+
+.field-input:disabled {
+  background: var(--surface-pearl);
+  color: var(--ink-muted-48);
+  cursor: not-allowed;
+}
+
+.field-input[aria-invalid="true"] {
+  border-color: #c0392b;
+}
+
+.field-input[aria-invalid="true"]:focus-visible {
+  box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.5);
+}
+
+/* -----------------------------------------------------------------
+ * Inline error — used by <InlineError>.
+ *
+ * Caption-sized copy in an error-tone red. The component takes care of
+ * `role="alert"` for assistive tech.
+ * ----------------------------------------------------------------- */
+
+.inline-error {
+  font-family: var(--font-text);
+  font-size: var(--font-caption-size);
+  line-height: var(--font-caption-line-height);
+  letter-spacing: var(--font-caption-letter-spacing);
+  color: #c0392b;
+}
+
+/* -----------------------------------------------------------------
+ * Page shell — used by <PageShell>.
+ *
+ * design.md § "UI/디자인 시스템 매핑" defines the section rhythm: every
+ * feature page renders inside a `.page` container that supplies 80px
+ * top/bottom breathing room (--space-section) and 48px horizontal
+ * gutters (--space-xxl). Content is centered within a 1200px max-width
+ * column so wide screens still feel calm and Apple-quiet.
+ *
+ * Requirement 10.6: `.page` applies `padding: var(--space-section) …`.
+ * ----------------------------------------------------------------- */
+
+.page {
+  padding: var(--space-section) var(--space-xxl);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.page-title {
+  font-family: var(--font-display-md-family);
+  font-size: var(--font-display-md-size);
+  font-weight: var(--font-display-md-weight);
+  line-height: var(--font-display-md-line-height);
+  letter-spacing: var(--font-display-md-letter-spacing);
+  color: var(--ink);
+}
+
+.page-toolbar {
+  margin-left: auto;
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.page-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+/* -----------------------------------------------------------------
+ * DataTable — used by <DataTable> (task 8.3).
+ *
+ * A minimal grid with hairline borders, right-aligned toolbar,
+ * per-row inline edit + delete controls, and a modal confirm dialog
+ * for destructive actions. All colors resolve to design tokens so no
+ * bespoke hues leak into the component.
+ * ----------------------------------------------------------------- */
+
+.data-table-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  width: 100%;
+}
+
+.data-table-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-xs);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-text);
+  font-size: var(--font-body-size);
+  color: var(--ink);
+  background: var(--canvas);
+}
+
+.data-table th,
+.data-table td {
+  border-bottom: 1px solid var(--hairline);
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.data-table th {
+  font-weight: var(--font-caption-strong-weight);
+  font-size: var(--font-caption-strong-size);
+  line-height: var(--font-caption-strong-line-height);
+  letter-spacing: var(--font-caption-strong-letter-spacing);
+  color: var(--ink-muted-80);
+  background: var(--surface-pearl);
+}
+
+.data-table-actions-header,
+.data-table-actions {
+  text-align: right;
+  width: 1%;               /* shrink to content */
+  white-space: nowrap;
+}
+
+.data-table-actions {
+  display: flex;
+  gap: var(--space-xs);
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.data-table-empty {
+  text-align: center;
+  color: var(--ink-muted-48);
+  padding: var(--space-lg) var(--space-md);
+}
+
+.data-table-edit-input {
+  width: 100%;
+  min-width: 0;
+}
+
+.data-table-icon-button {
+  background: transparent;
+  border: 1px solid var(--hairline);
+  color: var(--ink);
+  border-radius: var(--rounded-sm);
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: var(--font-caption-size);
+  line-height: 1;
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.data-table-icon-button:hover:not(:disabled) {
+  background: var(--surface-pearl);
+  border-color: var(--ink-muted-48);
+}
+
+.data-table-icon-button:focus-visible {
+  outline: 2px solid var(--primary-focus);
+  outline-offset: 2px;
+}
+
+.data-table-icon-button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* -----------------------------------------------------------------
+ * Confirm dialog — reused for row deletion in <DataTable> and any
+ * other single-message confirmation prompts.
+ * ----------------------------------------------------------------- */
+
+.confirm-dialog {
+  position: fixed;
+  inset: 0;
+  background: rgba(29, 29, 31, 0.45); /* --ink at ~45% */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: var(--space-md);
+}
+
+.confirm-dialog-card {
+  background: var(--canvas);
+  border-radius: var(--rounded-lg);
+  padding: var(--space-lg);
+  min-width: 280px;
+  max-width: 400px;
+  box-shadow: var(--shadow-product);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.confirm-dialog-message {
+  font-family: var(--font-text);
+  font-size: var(--font-body-strong-size);
+  font-weight: var(--font-body-strong-weight);
+  line-height: var(--font-body-strong-line-height);
+  color: var(--ink);
+  margin: 0;
+  text-align: center;
+}
+
+.confirm-dialog-actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+/* -----------------------------------------------------------------
+ * Calendar — used by <CalendarHeader> and <CalendarGrid> (task 8.7).
+ *
+ * Schedule 페이지 상단의 월 이동 컨트롤(`.calendar-header`)과 7 열 그리드
+ * (`.calendar-weekdays` + `.calendar-grid`)를 지원한다. 하이라이트된
+ * 셀(`.has-schedule`)은 `--primary` 토큰 배경으로 렌더링하여 Requirement
+ * 10.2(액센트 색상 = #0066cc) 및 2.4(일정 등록 날짜 시각 표시)를 동시에 만족.
+ *
+ * `inMonth: false` 셀(`.day-cell-out`)은 muted ink + 감소된 opacity로 시각
+ * 계층을 낮추어 사용자가 대상 월 vs. 인접 월을 즉시 구분할 수 있도록 한다.
+ * ----------------------------------------------------------------- */
+
+.calendar-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.calendar-month-label {
+  font-family: var(--font-display-md-family);
+  font-size: var(--font-display-md-size);
+  font-weight: var(--font-display-md-weight);
+  line-height: var(--font-display-md-line-height);
+  letter-spacing: var(--font-display-md-letter-spacing);
+  color: var(--ink);
+  margin: 0;
+}
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-xxs);
+  text-align: center;
+  font-family: var(--font-text);
+  font-size: var(--font-caption-size);
+  line-height: var(--font-caption-line-height);
+  letter-spacing: var(--font-caption-letter-spacing);
+  color: var(--ink-muted-48);
+  margin-bottom: var(--space-xs);
+}
+
+.calendar-weekday {
+  padding: var(--space-xxs) 0;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: var(--space-xxs);
+}
+
+.day-cell {
+  aspect-ratio: 1 / 1;
+  padding: var(--space-xs);
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+  border-radius: var(--rounded-sm);
+  cursor: pointer;
+  text-align: center;
+  font-family: var(--font-text);
+  font-size: var(--font-body-size);
+  line-height: 1.24;
+  letter-spacing: -0.374px;
+  color: var(--ink);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-end;
+}
+
+.day-cell:hover:not(:disabled) {
+  background: var(--surface-pearl);
+}
+
+.day-cell:focus-visible {
+  outline: 2px solid var(--primary-focus);
+  outline-offset: 2px;
+}
+
+.day-cell-out {
+  color: var(--ink-muted-48);
+  opacity: 0.4;
+}
+
+.day-cell.has-schedule {
+  background: var(--primary);
+  color: var(--on-primary);
+  font-weight: 600;
+  border-color: var(--primary);
+}
+
+.day-cell.has-schedule:hover:not(:disabled) {
+  background: var(--primary);
+  opacity: 0.92;
+}
+
+.day-cell-selected {
+  outline: 2px solid var(--primary-focus);
+  outline-offset: 2px;
+}
+
+/* -----------------------------------------------------------------
+ * SideNavigation — used by <SideNavigation> (task 9.1).
+ *
+ * The permanent left rail exposing the four page entry points
+ * (일정 / 결정사항 / 예산관리 / 연락처). Fixed to the viewport so it stays
+ * put during route changes and body scrolling. Uses --canvas-parchment as
+ * background against the white main canvas, separated by a 1px hairline —
+ * the same parchment/canvas duality the design tokens define.
+ *
+ * Active-state visual (Requirement 1.3): the current-route NavLink picks up
+ * both `color: var(--primary)` and a 4px primary indicator bar on its left
+ * edge via `::before`, giving redundant cues so activity is clear regardless
+ * of color perception.
+ *
+ * Requirements covered:
+ *  - 1.1 four fixed menu entries rendered on every page
+ *  - 1.3 active menu item visually distinct (color + indicator bar)
+ * ----------------------------------------------------------------- */
+
+.side-navigation {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 240px;
+  background: var(--canvas-parchment);
+  border-right: 1px solid var(--hairline);
+  padding: var(--space-xl) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  z-index: 10;
+}
+
+.side-nav-title {
+  font-family: var(--font-display-md-family);
+  font-size: var(--font-display-md-size);
+  font-weight: var(--font-display-md-weight);
+  line-height: var(--font-display-md-line-height);
+  letter-spacing: var(--font-display-md-letter-spacing);
+  color: var(--ink);
+  margin: 0;
+}
+
+.side-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.side-nav-link {
+  display: block;
+  position: relative;
+  text-decoration: none;
+  color: var(--ink);
+  padding: var(--space-sm) var(--space-md);
+  border-radius: var(--rounded-md);
+  font-family: var(--font-caption-strong-family);
+  font-size: var(--font-caption-strong-size);
+  font-weight: var(--font-caption-strong-weight);
+  line-height: var(--font-caption-strong-line-height);
+  letter-spacing: var(--font-caption-strong-letter-spacing);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.side-nav-link:hover {
+  background: var(--surface-pearl);
+  text-decoration: none;
+}
+
+.side-nav-link:focus-visible {
+  outline: 2px solid var(--primary-focus);
+  outline-offset: 2px;
+}
+
+.side-nav-link.active {
+  color: var(--primary);
+  font-weight: 600;
+  background: var(--canvas);
+}
+
+.side-nav-link.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: 8px;
+  width: 4px;
+  background: var(--primary);
+  border-radius: var(--rounded-pill);
+}
+
+/* -----------------------------------------------------------------
+ * Schedule add form — used by <AddScheduleForm> (task 10.3).
+ *
+ * A minimal card that hosts the 5-field 일정 추가 form (날짜 · 장소 · 시간
+ * · 일정내용 · 메모) plus the 저장 / 취소 action row. Rendered as an inline
+ * card inside SchedulePage (not a full-screen modal) so the surrounding
+ * calendar remains visible while the user is composing.
+ * ----------------------------------------------------------------- */
+
+.schedule-add-form {
+  background: var(--canvas);
+  border: 1px solid var(--hairline);
+  border-radius: var(--rounded-lg);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.schedule-add-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  margin-top: var(--space-sm);
+}
+
+/* -----------------------------------------------------------------
+ * BudgetSummary — used by <BudgetSummary> (task 14.2).
+ *
+ * A 3-column card row rendered at the top of the Budget page displaying
+ * 총 예산 · 총 지출 · 잔여 예산. Each cell is a pearl-tinted tile with a
+ * caption-strong label above a display-md value so the numbers dominate
+ * the composition while the labels remain quietly legible.
+ *
+ * Requirements covered:
+ *  - 7.1 세 값(총 예산, 총 지출, 잔여 예산)이 항상 함께 표시된다.
+ *  - 7.7 값은 원 단위 정수 + 세 자리 쉼표 (컴포넌트가 formatKRW로 처리).
+ *
+ * The row uses `--space-lg` gaps between cells and `--space-xl` bottom
+ * margin so the summary breathes against the BudgetItemTable below it,
+ * matching the 8px-based rhythm defined in tokens.css.
+ * ----------------------------------------------------------------- */
+
+.budget-summary {
+  display: flex;
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+.budget-summary-cell {
+  flex: 1;
+  padding: var(--space-lg);
+  background: var(--surface-pearl);
+  border-radius: var(--rounded-lg);
+  text-align: center;
+}
+
+.budget-summary-label {
+  font-family: var(--font-caption-strong-family);
+  font-size: var(--font-caption-strong-size);
+  font-weight: var(--font-caption-strong-weight);
+  line-height: var(--font-caption-strong-line-height);
+  letter-spacing: var(--font-caption-strong-letter-spacing);
+  color: var(--ink-muted-48);
+  margin-bottom: var(--space-xs);
+}
+
+.budget-summary-value {
+  font-family: var(--font-display-md-family);
+  font-size: var(--font-display-md-size);
+  font-weight: var(--font-display-md-weight);
+  line-height: var(--font-display-md-line-height);
+  letter-spacing: var(--font-display-md-letter-spacing);
+  color: var(--ink);
+}
+
+/* -----------------------------------------------------------------
+ * Budget auth gate — used by <BudgetAuthGate> (task 13.2).
+ *
+ * Compact centered form that fronts the 예산관리 page. Deliberately quiet:
+ * a single column stack (라벨 · 입력 · 확인 · 에러) with narrow max-width so
+ * nothing surrounding the input suggests structure of the expected value
+ * (Requirement 4.3). Sits inside <PageShell>, so the 80px section rhythm
+ * comes from `.page` and this rule only handles horizontal centering and
+ * intra-form spacing.
+ * ----------------------------------------------------------------- */
+
+.budget-auth-gate {
+  max-width: 320px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+/* -----------------------------------------------------------------
+ * CategoryManagerModal — used by <CategoryManagerModal> (task 14.4).
+ *
+ * Wider card variant that sits on top of the reused `.confirm-dialog`
+ * overlay. Hosts a scrollable list of categories with per-row inline
+ * edit + delete controls, a "새 카테고리 추가" input row, an InlineError
+ * slot, and a footer "닫기" button.
+ *
+ * Requirements covered:
+ *  - 6.2 편집 가능한 카테고리 목록 표시
+ *  - 6.3/6.4/6.5 추가·수정·삭제 CRUD 트리거
+ *  - 6.6/6.7 중복 및 참조 존재 시 InlineError 노출
+ * ----------------------------------------------------------------- */
+
+.category-manager-card {
+  background: var(--canvas);
+  border-radius: var(--rounded-lg);
+  padding: var(--space-lg);
+  min-width: 320px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+  box-shadow: var(--shadow-product);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  overflow: hidden;
+}
+
+.category-manager-title {
+  margin: 0;
+  font-family: var(--font-display-md-family);
+  font-size: var(--font-display-md-size);
+  font-weight: var(--font-display-md-weight);
+  line-height: var(--font-display-md-line-height);
+  letter-spacing: var(--font-display-md-letter-spacing);
+  color: var(--ink);
+}
+
+.category-manager-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.category-manager-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-xs) var(--space-sm);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.category-manager-row-name {
+  flex: 1;
+  font-family: var(--font-text);
+  font-size: var(--font-body-size);
+  color: var(--ink);
+}
+
+.category-manager-row-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.category-manager-row-actions {
+  display: flex;
+  gap: var(--space-xs);
+  flex-shrink: 0;
+}
+
+.category-manager-empty {
+  text-align: center;
+  color: var(--ink-muted-48);
+  padding: var(--space-md);
+}
+
+.category-manager-add {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-sm);
+}
+
+.category-manager-add .field {
+  flex: 1;
+  min-width: 0;
+}
+
+.category-manager-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--hairline);
+}
+
+/* -----------------------------------------------------------------
+ * App main outlet — used by <App />'s route outlet <main> (task 9.2).
+ *
+ * `<SideNavigation>` is `position: fixed` at width 240px, so the main
+ * content region must shift right by that same amount to avoid the rail
+ * overlapping page content. `min-height: 100vh` keeps the canvas
+ * background (defined on body via `--canvas`) filling the viewport even
+ * on pages whose content is shorter than the fold, matching the Apple-
+ * quiet, always-full-bleed visual language.
+ * ----------------------------------------------------------------- */
+
+.app-main {
+  margin-left: 240px;
+  min-height: 100vh;
+}

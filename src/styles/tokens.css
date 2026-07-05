@@ -1,0 +1,206 @@
+/*
+ * Design tokens for Wedding Planner
+ *
+ * Source of truth: UI_Design.md (Apple-style design analysis).
+ * Mapping reference: design.md § "UI/디자인 시스템 매핑".
+ *
+ * Requirements covered by this file:
+ *  - 10.1 body font stack ("SF Pro Text/Display" → system-ui fallback)
+ *  - 10.2 primary accent color (--primary = #0066cc)
+ *  - 10.3 canvas backgrounds (--canvas / --canvas-parchment)
+ *  - 10.4 body ink color (--ink = #1d1d1f)
+ *  - 10.5 pill radius for primary CTAs (--rounded-pill = 9999px)
+ *  - 10.6 80px section rhythm (--space-section = 80px)
+ *
+ * All tokens are declared as CSS custom properties on :root so every
+ * component can consume them via var(--token-name). Component-specific
+ * class rules (.pill-primary, .page, etc.) are defined in global.css.
+ */
+
+:root {
+  /* -------------------------------------------------------------- */
+  /* Colors                                                          */
+  /* -------------------------------------------------------------- */
+
+  /* Brand & accent */
+  --primary:          #0066cc; /* Action Blue — every interactive CTA */
+  --primary-focus:    #0071e3; /* Focus ring, slightly brighter blue */
+  --primary-on-dark:  #2997ff; /* In-copy links on dark tiles */
+
+  /* Text / ink */
+  --ink:              #1d1d1f; /* Body & headline color on light surfaces */
+  --body:             #1d1d1f;
+  --body-on-dark:     #ffffff;
+  --body-muted:       #cccccc; /* Secondary text on dark tiles */
+  --ink-muted-80:     #333333; /* Softer body on pearl surface */
+  --ink-muted-48:     #7a7a7a; /* Disabled text, legal fine-print */
+
+  /* Hairlines */
+  --divider-soft:     #f0f0f0; /* Soft ring on secondary buttons */
+  --hairline:         #e0e0e0; /* 1px hairline on cards & sub-nav */
+
+  /* Surfaces */
+  --canvas:           #ffffff;
+  --canvas-parchment: #f5f5f7;
+  --surface-pearl:    #fafafc;
+  --surface-tile-1:   #272729;
+  --surface-tile-2:   #2a2a2c;
+  --surface-tile-3:   #252527;
+  --surface-black:    #000000;
+  --surface-chip-translucent: #d2d2d7;
+
+  /* On-colors */
+  --on-primary:       #ffffff;
+  --on-dark:          #ffffff;
+
+  /* -------------------------------------------------------------- */
+  /* Border radius                                                   */
+  /* -------------------------------------------------------------- */
+
+  --rounded-none:     0px;
+  --rounded-xs:       5px;
+  --rounded-sm:       8px;
+  --rounded-md:       11px;
+  --rounded-lg:       18px;
+  --rounded-pill:     9999px;
+  --rounded-full:     9999px;
+
+  /* -------------------------------------------------------------- */
+  /* Spacing (8px-based rhythm)                                      */
+  /* -------------------------------------------------------------- */
+
+  --space-xxs:        4px;
+  --space-xs:         8px;
+  --space-sm:         12px;
+  --space-md:         17px;
+  --space-lg:         24px;
+  --space-xl:         32px;
+  --space-xxl:        48px;
+  --space-section:    80px;
+
+  /* -------------------------------------------------------------- */
+  /* Typography                                                      */
+  /* -------------------------------------------------------------- */
+
+  /* Font families (SF Pro on Apple platforms; system-ui fallback) */
+  --font-display:     "SF Pro Display", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-text:        "SF Pro Text",    system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+
+  /* Hero display — 56/1.07/-0.28/600 */
+  --font-hero-display-family:         var(--font-display);
+  --font-hero-display-size:           56px;
+  --font-hero-display-weight:         600;
+  --font-hero-display-line-height:    1.07;
+  --font-hero-display-letter-spacing: -0.28px;
+
+  /* Display lg — 40/1.10/0/600 */
+  --font-display-lg-family:         var(--font-display);
+  --font-display-lg-size:           40px;
+  --font-display-lg-weight:         600;
+  --font-display-lg-line-height:    1.10;
+  --font-display-lg-letter-spacing: 0;
+
+  /* Display md — 34/1.47/-0.374/600 */
+  --font-display-md-family:         var(--font-text);
+  --font-display-md-size:           34px;
+  --font-display-md-weight:         600;
+  --font-display-md-line-height:    1.47;
+  --font-display-md-letter-spacing: -0.374px;
+
+  /* Lead — 28/1.14/0.196/400 */
+  --font-lead-family:         var(--font-display);
+  --font-lead-size:           28px;
+  --font-lead-weight:         400;
+  --font-lead-line-height:    1.14;
+  --font-lead-letter-spacing: 0.196px;
+
+  /* Lead airy — 24/1.5/0/300 */
+  --font-lead-airy-family:         var(--font-text);
+  --font-lead-airy-size:           24px;
+  --font-lead-airy-weight:         300;
+  --font-lead-airy-line-height:    1.5;
+  --font-lead-airy-letter-spacing: 0;
+
+  /* Tagline — 21/1.19/0.231/600 */
+  --font-tagline-family:         var(--font-display);
+  --font-tagline-size:           21px;
+  --font-tagline-weight:         600;
+  --font-tagline-line-height:    1.19;
+  --font-tagline-letter-spacing: 0.231px;
+
+  /* Body strong — 17/1.24/-0.374/600 */
+  --font-body-strong-family:         var(--font-text);
+  --font-body-strong-size:           17px;
+  --font-body-strong-weight:         600;
+  --font-body-strong-line-height:    1.24;
+  --font-body-strong-letter-spacing: -0.374px;
+
+  /* Body — 17/1.47/-0.374/400 (default paragraph) */
+  --font-body-family:         var(--font-text);
+  --font-body-size:           17px;
+  --font-body-weight:         400;
+  --font-body-line-height:    1.47;
+  --font-body-letter-spacing: -0.374px;
+
+  /* Dense link — 17/2.41/0/400 (footer/store column) */
+  --font-dense-link-family:         var(--font-text);
+  --font-dense-link-size:           17px;
+  --font-dense-link-weight:         400;
+  --font-dense-link-line-height:    2.41;
+  --font-dense-link-letter-spacing: 0;
+
+  /* Caption — 14/1.43/-0.224/400 */
+  --font-caption-family:         var(--font-text);
+  --font-caption-size:           14px;
+  --font-caption-weight:         400;
+  --font-caption-line-height:    1.43;
+  --font-caption-letter-spacing: -0.224px;
+
+  /* Caption strong — 14/1.29/-0.224/600 */
+  --font-caption-strong-family:         var(--font-text);
+  --font-caption-strong-size:           14px;
+  --font-caption-strong-weight:         600;
+  --font-caption-strong-line-height:    1.29;
+  --font-caption-strong-letter-spacing: -0.224px;
+
+  /* Button large — 18/1.0/0/300 */
+  --font-button-large-family:         var(--font-text);
+  --font-button-large-size:           18px;
+  --font-button-large-weight:         300;
+  --font-button-large-line-height:    1.0;
+  --font-button-large-letter-spacing: 0;
+
+  /* Button utility — 14/1.29/-0.224/400 */
+  --font-button-utility-family:         var(--font-text);
+  --font-button-utility-size:           14px;
+  --font-button-utility-weight:         400;
+  --font-button-utility-line-height:    1.29;
+  --font-button-utility-letter-spacing: -0.224px;
+
+  /* Fine print — 12/1.0/-0.12/400 */
+  --font-fine-print-family:         var(--font-text);
+  --font-fine-print-size:           12px;
+  --font-fine-print-weight:         400;
+  --font-fine-print-line-height:    1.0;
+  --font-fine-print-letter-spacing: -0.12px;
+
+  /* Micro legal — 10/1.3/-0.08/400 */
+  --font-micro-legal-family:         var(--font-text);
+  --font-micro-legal-size:           10px;
+  --font-micro-legal-weight:         400;
+  --font-micro-legal-line-height:    1.3;
+  --font-micro-legal-letter-spacing: -0.08px;
+
+  /* Nav link — 12/1.0/-0.12/400 */
+  --font-nav-link-family:         var(--font-text);
+  --font-nav-link-size:           12px;
+  --font-nav-link-weight:         400;
+  --font-nav-link-line-height:    1.0;
+  --font-nav-link-letter-spacing: -0.12px;
+
+  /* -------------------------------------------------------------- */
+  /* Elevation (Apple uses exactly one drop-shadow, on product art)  */
+  /* -------------------------------------------------------------- */
+
+  --shadow-product: 3px 5px 30px 0 rgba(0, 0, 0, 0.22);
+}
