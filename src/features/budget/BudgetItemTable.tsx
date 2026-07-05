@@ -355,13 +355,29 @@ export function BudgetItemTable(props: BudgetItemTableProps) {
     {
       key: 'Wed_amount',
       header: '결제금액',
-      width: '130px',
+      width: '110px',
       render: (row) => formatKRW(row.Wed_amount),
+      renderEdit: (row, patch, setPatch) => {
+        const current =
+          'Wed_amount' in patch
+            ? ((patch.Wed_amount as unknown as number | null) ?? null)
+            : row.Wed_amount;
+        return (
+          <NumberField
+            label="결제금액"
+            hideLabel
+            value={current}
+            onChange={(v) =>
+              setPatch({ ...patch, Wed_amount: v } as Partial<BudgetItem>)
+            }
+          />
+        );
+      },
     },
     {
       key: 'Wed_due_date',
       header: '결제일',
-      width: '120px',
+      width: '100px',
       render: (row) => (row.Wed_due_date === null ? '' : row.Wed_due_date),
     },
     {
@@ -373,7 +389,7 @@ export function BudgetItemTable(props: BudgetItemTableProps) {
     {
       key: 'Wed_vendor',
       header: '거래처',
-      width: '120px',
+      width: '160px',
       render: (row) => (row.Wed_vendor === null ? '' : row.Wed_vendor),
     },
     {

@@ -109,6 +109,15 @@ export function SchedulePage() {
       {errorMsg && <InlineError>{errorMsg}</InlineError>}
 
       <div className="schedule-layout">
+        <div className="schedule-detail">
+          <DaySchedulesPanel
+            selectedDate={selectedDate}
+            records={records}
+            onMutate={refetch}
+            onError={setErrorMsg}
+          />
+        </div>
+
         <div className="schedule-calendar">
           <CalendarHeader
             year={currentMonth.year}
@@ -125,15 +134,6 @@ export function SchedulePage() {
           />
 
           <p className="schedule-hint">날짜를 더블클릭하면 일정을 추가할 수 있습니다.</p>
-        </div>
-
-        <div className="schedule-detail">
-          <DaySchedulesPanel
-            selectedDate={selectedDate}
-            records={records}
-            onMutate={refetch}
-            onError={setErrorMsg}
-          />
         </div>
       </div>
 

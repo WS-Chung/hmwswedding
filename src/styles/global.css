@@ -250,6 +250,22 @@ a:focus-visible {
   cursor: not-allowed;
 }
 
+/*
+ * 금액 등 숫자 입력에서 브라우저 기본 스핀 버튼(위/아래 화살표)을 제거한다.
+ * NumberField는 type="text"로 전환했지만, 잔여 type="number" 입력이 있어도
+ * 화살표가 나타나지 않도록 전역 안전장치를 둔다(사용자 요구: 직접 입력만 허용).
+ */
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 .field-input[aria-invalid="true"] {
   border-color: #c0392b;
 }
@@ -380,8 +396,24 @@ a:focus-visible {
 .data-table-actions-header,
 .data-table-actions {
   text-align: right;
-  width: 1%;               /* shrink to content */
+  /*
+   * 고정 폭(백분율 아님)으로 두어야 width:100% auto 테이블에서 액션 컬럼이
+   * 테이블 우측 끝까지 확장된다. `width: 1%`(백분율)를 쓰면 남는 폭이 우측에
+   * 미분배로 남아 버튼이 오른쪽 끝보다 안쪽에 놓였다. 편집 모드의 저장/취소
+   * 버튼이 더 넓으면 auto 레이아웃이 이 값을 최소폭으로 보고 확장한다.
+   */
+  width: 104px;
   white-space: nowrap;
+}
+
+/*
+ * 수정/삭제 버튼을 액션 컬럼의 오른쪽 끝에 완전히 밀착시킨다. 셀 기본
+ * 오른쪽 패딩(12px)이 버튼을 살짝 안쪽으로 당기던 것을 제거한다.
+ * (`.data-table td` 보다 높은 specificity로 padding-right만 덮어쓴다.)
+ */
+.data-table th.data-table-actions-header,
+.data-table td.data-table-actions {
+  padding-right: 0;
 }
 
 .data-table-actions {
@@ -400,6 +432,19 @@ a:focus-visible {
 .data-table-edit-input {
   width: 100%;
   min-width: 0;
+}
+
+/*
+ * 인라인 편집 셀 안에서 <NumberField> 등 `.field` 래퍼를 쓰는 경우, 셀 높이가
+ * 늘어나지 않도록 여백을 제거하고 입력을 셀 폭에 맞춘다.
+ */
+.data-table td .field {
+  margin-bottom: 0;
+  gap: 0;
+}
+
+.data-table td .field-input {
+  width: 100%;
 }
 
 .data-table-icon-button {

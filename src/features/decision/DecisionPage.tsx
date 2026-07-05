@@ -163,6 +163,22 @@ export function DecisionPage() {
       key: 'Wed_expense',
       header: '지출',
       render: (row) => (row.Wed_expense === null ? '-' : formatKRW(row.Wed_expense)),
+      renderEdit: (row, patch, setPatch) => {
+        const current =
+          'Wed_expense' in patch
+            ? ((patch.Wed_expense as unknown as number | null) ?? null)
+            : row.Wed_expense;
+        return (
+          <NumberField
+            label="지출"
+            hideLabel
+            value={current}
+            onChange={(v) =>
+              setPatch({ ...patch, Wed_expense: v } as Partial<DecisionRecord>)
+            }
+          />
+        );
+      },
     },
     {
       key: 'Wed_link',

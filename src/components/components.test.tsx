@@ -83,13 +83,20 @@ describe('TextField', () => {
 });
 
 describe('NumberField', () => {
-  it('renders empty string when value is null', () => {
+  it('renders a spinner-free text input (no up/down arrows)', () => {
     render(<NumberField label="결제금액" value={null} onChange={() => {}} id="amt" />);
     const input = screen.getByLabelText('결제금액') as HTMLInputElement;
-    expect(input.type).toBe('number');
+    // type="text" (not "number") 이므로 브라우저 스핀 버튼이 렌더되지 않는다.
+    expect(input.type).toBe('text');
+    expect(input.getAttribute('inputmode')).toBe('numeric');
     expect(input.value).toBe('');
-    expect(input.getAttribute('min')).toBe('0');
-    expect(input.getAttribute('step')).toBe('1');
+  });
+
+  it('displays the value with three-digit comma grouping', () => {
+    render(<NumberField label="결제금액" value={1234567} onChange={() => {}} />);
+    expect((screen.getByLabelText('결제금액') as HTMLInputElement).value).toBe(
+      '1,234,567',
+    );
   });
 
   it('emits null when the input is cleared', () => {
@@ -99,11 +106,11 @@ describe('NumberField', () => {
     expect(onChange).toHaveBeenCalledWith(null);
   });
 
-  it('emits a number when a numeric value is entered', () => {
+  it('strips commas and non-digits, emitting the parsed number', () => {
     const onChange = vi.fn();
     render(<NumberField label="결제금액" value={null} onChange={onChange} />);
-    fireEvent.change(screen.getByLabelText('결제금액'), { target: { value: '42000' } });
-    expect(onChange).toHaveBeenCalledWith(42000);
+    fireEvent.change(screen.getByLabelText('결제금액'), { target: { value: '1,234,567' } });
+    expect(onChange).toHaveBeenCalledWith(1234567);
   });
 });
 
