@@ -1312,6 +1312,7 @@ input[type='number'] {
     padding: var(--space-xs) var(--space-sm);
     margin-bottom: var(--space-sm);
     background: var(--canvas);
+    box-shadow: var(--shadow-card); /* 개별 카드를 은은하게 띄운다. */
   }
 
   .data-table td {
