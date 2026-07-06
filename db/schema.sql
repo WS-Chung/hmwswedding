@@ -80,12 +80,12 @@ create table if not exists "Wed_Contact" (
 );
 
 -- ---------------------------------------------------------------------------
--- 초기 시딩 (Requirement 6.1): 정확히 8개의 카테고리.
+-- 초기 시딩 (Requirement 6.1): 6개의 카테고리.
 -- 재실행 시 중복 삽입을 방지하기 위해 on conflict 사용.
 -- ---------------------------------------------------------------------------
 insert into "Wed_Budget_Category" ("Wed_name") values
   ('웨딩홀'), ('스드메'), ('신혼여행'), ('한복'),
-  ('예물'),  ('기타'),   ('가전'),     ('가구')
+  ('예물'),  ('기타')
 on conflict ("Wed_name") do nothing;
 
 -- ---------------------------------------------------------------------------
@@ -149,3 +149,8 @@ alter table "Wed_Budget_Item" drop   column if exists     "Wed_installment";
 --   numeric → text 로 컬럼 타입을 전환한다. 기존 숫자 값은 문자열로 캐스팅된다.
 alter table "Wed_Decision"
   alter column "Wed_expense" type text using "Wed_expense"::text;
+
+-- 예산 카테고리에서 '가전', '가구' 제거.
+--   해당 카테고리를 사용하는 예산 항목이 있으면 먼저 처리(이동/삭제)해야 한다.
+--   (사용 중인 항목이 없을 때만 아래 삭제가 정상 수행된다.)
+delete from "Wed_Budget_Category" where "Wed_name" in ('가전', '가구');
