@@ -1270,4 +1270,115 @@ input[type='number'] {
   .schedule-calendar {
     order: -1;
   }
+
+  /* 페이지 좌우 패딩을 더 줄여 가로 폭을 최대한 활용한다(사용자 요구). */
+  .page {
+    padding: 64px var(--space-xs) var(--space-lg);
+  }
+
+  /* ---------------------------------------------------------------
+   * 표(DataTable)를 세로 카드형으로 전환한다.
+   *
+   * 좁은 화면에서 다열(多列) 표는 (a) 가로 스크롤이 생기거나 (b) 열이 좁아
+   * 텍스트가 과도하게 줄바꿈되어 세로로 매우 길어진다. 이를 해결하기 위해
+   * 각 행(row)을 하나의 카드로 만들고, 각 셀을 "라벨: 값" 한 줄로 쌓는다.
+   * 값(특히 코멘트)은 화면 전체 폭을 쓰므로 줄바꿈이 최소화된다.
+   *   - thead(정렬 헤더)는 숨긴다(카드에서는 라벨이 값 옆에 붙는다).
+   *   - `td::before`가 `data-label`(컬럼명)을 값 앞에 렌더한다.
+   * ------------------------------------------------------------- */
+  .data-table-wrapper {
+    overflow-x: visible; /* 카드형에서는 가로 스크롤 불필요. */
+  }
+
+  .data-table {
+    display: block;
+    width: 100%;
+  }
+
+  .data-table colgroup,
+  .data-table thead {
+    display: none;
+  }
+
+  .data-table tbody {
+    display: block;
+  }
+
+  .data-table tbody tr {
+    display: block;
+    width: 100%;
+    border: 1px solid var(--hairline);
+    border-radius: var(--rounded-md);
+    padding: var(--space-xs) var(--space-sm);
+    margin-bottom: var(--space-sm);
+    background: var(--canvas);
+  }
+
+  .data-table td {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+    width: 100% !important;
+    border: none;
+    border-bottom: 1px solid var(--divider-soft);
+    padding: var(--space-xs) 0;
+    white-space: normal;
+  }
+
+  .data-table tbody tr td:last-child {
+    border-bottom: none;
+  }
+
+  /* 각 값 앞에 컬럼명 라벨을 붙인다. */
+  .data-table td[data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 92px;
+    font-family: var(--font-caption-strong-family);
+    font-size: var(--font-caption-strong-size);
+    font-weight: var(--font-caption-strong-weight);
+    color: var(--ink-muted-48);
+  }
+
+  /* 값 영역은 남은 폭을 모두 차지하고, 긴 텍스트는 자연스럽게 줄바꿈. */
+  .data-table td > * {
+    min-width: 0;
+  }
+
+  .data-table td .cell-multiline {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /*
+   * 여러 줄 값(코멘트 표시/편집)은 라벨을 위에 두고 값이 전체 폭을 쓰도록
+   * 세로로 쌓아 줄바꿈을 최소화한다.
+   */
+  .data-table td:has(.cell-multiline),
+  .data-table td:has(textarea) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-xxs);
+  }
+
+  /* 빈 상태 메시지 셀은 라벨 없이 가운데 정렬 그대로. */
+  .data-table td.data-table-empty {
+    display: block;
+    text-align: center;
+    border-bottom: none;
+  }
+
+  /* 액션(수정/삭제) 셀은 라벨 없이 버튼을 오른쪽 정렬. */
+  .data-table td.data-table-actions {
+    width: 100% !important;
+    justify-content: flex-end;
+    padding-top: var(--space-sm);
+    border-bottom: none;
+  }
+
+  /* 편집 모드에서 입력 요소가 값 영역 전체 폭을 쓰도록. */
+  .data-table td .field-input,
+  .data-table td .data-table-edit-input {
+    flex: 1;
+    width: 100%;
+  }
 }
