@@ -424,11 +424,19 @@ input[type='number'] {
   padding-right: 0;
 }
 
-.data-table-actions {
-  display: flex;
-  gap: var(--space-xs);
-  justify-content: flex-end;
-  align-items: center;
+/*
+ * 액션 셀은 table-cell 상태를 유지한다. `display: flex`를 주면 셀이 더 이상
+ * 행 높이만큼 늘어나지 않고(내용 높이만 차지) 구분선(border-bottom)이 다른
+ * 셀과 어긋나며 버튼이 상단에 붙는다. table-cell + `vertical-align: middle`
+ * (base `.data-table td`에 지정됨)로 두면 버튼이 행의 정확한 중앙 높이에 오고
+ * 구분선도 다른 셀과 정렬된다. 버튼은 인라인으로 우측(text-align:right)에 배치.
+ */
+.data-table-actions > * {
+  vertical-align: middle;
+}
+
+.data-table-actions > * + * {
+  margin-left: var(--space-xs);
 }
 
 .data-table-empty {
