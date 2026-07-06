@@ -297,27 +297,24 @@ export function DataTable<T extends { Wed_id: string }>(
                 <tr key={row.Wed_id} data-row-id={row.Wed_id}>
                   {columns.map((col) => {
                     const cellKey = String(col.key);
+                    // `data-label`은 모바일 카드 레이아웃에서 각 값 앞에 컬럼명을
+                    // 붙이는 데 쓰인다(global.css의 ≤1080px 카드 변환 참조).
+                    let content: ReactNode;
                     if (isEditing) {
-                      // Edit-mode cell: custom renderEdit or plain input.
                       if (col.renderEdit) {
-                        return (
-                          <td key={cellKey}>
-                            {col.renderEdit(row, patch, setPatch)}
-                          </td>
-                        );
-                      }
-                      const current =
-                        (col.key as string) in patch
-                          ? (patch as Record<string, unknown>)[
-                              col.key as string
-                            ]
-                          : readCell(row, col.key);
-                      const stringValue =
-                        current === null || current === undefined
-                          ? ''
-                          : String(current);
-                      return (
-                        <td key={cellKey}>
+                        content = col.renderEdit(row, patch, setPatch);
+                      } else {
+                        const current =
+                          (col.key as string) in patch
+                            ? (patch as Record<string, unknown>)[
+                                col.key as string
+                              ]
+                            : readCell(row, col.key);
+                        const stringValue =
+                          current === null || current === undefined
+                            ? ''
+                            : String(current);
+                        content = (
                           <input
                             className="field-input data-table-edit-input"
                             type="text"
@@ -330,17 +327,20 @@ export function DataTable<T extends { Wed_id: string }>(
                               } as Partial<T>)
                             }
                           />
-                        </td>
-                      );
+                        );
+                      }
+                    } else if (col.render) {
+                      content = col.render(row);
+                    } else {
+                      const raw = readCell(row, col.key);
+                      content =
+                        raw === null || raw === undefined ? '' : String(raw);
                     }
-                    // Read-mode cell: custom render or verbatim key.
-                    if (col.render) {
-                      return <td key={cellKey}>{col.render(row)}</td>;
-                    }
-                    const raw = readCell(row, col.key);
-                    const text =
-                      raw === null || raw === undefined ? '' : String(raw);
-                    return <td key={cellKey}>{text}</td>;
+                    return (
+                      <td key={cellKey} data-label={col.header}>
+                        {content}
+                      </td>
+                    );
                   })}
 
                   <td className="data-table-actions">
