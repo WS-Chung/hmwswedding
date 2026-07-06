@@ -2,7 +2,7 @@
  * Budget calculation pure functions.
  *
  * Reference: design.md § Budget_Manager · BudgetSummary
- * - `TOTAL_BUDGET` is fixed at 60,000,000 KRW (Requirement 7.2).
+ * - `TOTAL_BUDGET` is fixed at 40,000,000 KRW (Requirement 7.2).
  * - `totalSpent` treats null `Wed_amount` as 0 in the arithmetic sum
  *   (Requirements 7.3, 7.6).
  * - `remainingBudget` satisfies `TOTAL_BUDGET - totalSpent(items)`
@@ -11,7 +11,7 @@
  *   preserving relative order within each group (Requirement 5.1).
  */
 
-export const TOTAL_BUDGET = 60_000_000 as const;
+export const TOTAL_BUDGET = 40_000_000 as const;
 
 /**
  * Sums the `Wed_amount` of every item, replacing `null` with 0.
