@@ -3,7 +3,7 @@
 // Budget_Manager 페이지 상단 요약 카드(3-column) 컴포넌트.
 //
 // 세 셀(총 예산 / 총 지출 / 잔여 예산)에 각각 라벨과 값을 렌더링한다.
-// - 총 예산: `TOTAL_BUDGET` 상수 (60,000,000원, Requirement 7.2)
+// - 총 예산: `TOTAL_BUDGET` 상수 (40,000,000원, Requirement 7.2)
 // - 총 지출: `totalSpent(items)` — null 금액은 0으로 취급한 산술 합
 //           (Requirements 7.3, 7.6)
 // - 잔여 예산: `remainingBudget(items)` — `TOTAL_BUDGET - totalSpent(items)`
