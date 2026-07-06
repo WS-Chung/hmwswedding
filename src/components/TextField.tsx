@@ -30,6 +30,14 @@ export interface TextFieldProps {
   placeholder?: string;
   disabled?: boolean;
   autoComplete?: string;
+  /** 입력 가능한 최대 글자 수(띄어쓰기 포함). */
+  maxLength?: number;
+  /** true면 여러 줄 입력이 가능한 `<textarea>`로 렌더한다(줄바꿈 보존). */
+  multiline?: boolean;
+  /** multiline일 때 기본 표시 줄 수. */
+  rows?: number;
+  /** 라벨을 시각적으로 숨김(인라인 편집 셀 등). */
+  hideLabel?: boolean;
 }
 
 export function TextField({
@@ -42,30 +50,50 @@ export function TextField({
   placeholder,
   disabled,
   autoComplete,
+  maxLength,
+  multiline,
+  rows,
+  hideLabel,
 }: TextFieldProps) {
   const autoId = useId();
   const inputId = id ?? autoId;
   const errorId = error ? `${inputId}-error` : undefined;
 
+  const shared = {
+    id: inputId,
+    className: 'field-input',
+    value,
+    required,
+    placeholder,
+    disabled,
+    maxLength,
+    'aria-invalid': error ? true : undefined,
+    'aria-describedby': errorId,
+  } as const;
+
   return (
     <div className="field">
-      <label className="field-label" htmlFor={inputId}>
+      <label
+        className={hideLabel ? 'field-label visually-hidden' : 'field-label'}
+        htmlFor={inputId}
+      >
         {label}
         {required ? <span aria-hidden="true"> *</span> : null}
       </label>
-      <input
-        id={inputId}
-        className="field-input"
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        required={required}
-        placeholder={placeholder}
-        disabled={disabled}
-        autoComplete={autoComplete}
-        aria-invalid={error ? true : undefined}
-        aria-describedby={errorId}
-      />
+      {multiline ? (
+        <textarea
+          {...shared}
+          rows={rows ?? 4}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      ) : (
+        <input
+          {...shared}
+          type="text"
+          autoComplete={autoComplete}
+          onChange={(e) => onChange(e.target.value)}
+        />
+      )}
       <InlineError id={errorId}>{error}</InlineError>
     </div>
   );

@@ -6,21 +6,29 @@ import { DataTable } from '../../components/DataTable';
 import type { DataTableColumn } from '../../components/DataTable';
 import { ExternalLink } from '../../components/ExternalLink';
 import { TextField } from '../../components/TextField';
-import { NumberField } from '../../components/NumberField';
+import { Select } from '../../components/Select';
 import { Modal } from '../../components/Modal';
-import { formatKRW } from '../../lib/format';
-import { normalizeDecision } from '../../lib/normalize';
+import {
+  normalizeDecision,
+  DECISION_ITEM_MAX,
+  DECISION_COMMENT_MAX,
+} from '../../lib/normalize';
 import { decisionApi } from './decisionApi';
 import type { DecisionRecord } from './decisionApi';
+
+/** 추가지출 드롭다운 옵션. */
+const EXPENSE_OPTIONS = ['있음', '없음'] as const;
 
 /**
  * DecisionPage (task 11.2)
  *
  * 결정사항 CRUD 페이지. 추가 액션은 팝업 모달(<Modal>) 안에서 처리된다.
  *
- * 컬럼: 항목 · 관계자 · 지출 · 관련링크 · 코멘트
- *  - 지출: null → '-', otherwise formatKRW
- *  - 관련링크: 비어있으면 plain text, 값이 있으면 <ExternalLink>
+ * 컬럼: 항목 · 관계자 · 추가지출 · 관련링크 · 코멘트
+ *  - 항목: 띄어쓰기 포함 최대 10자.
+ *  - 추가지출: '있음' | '없음' 드롭다운 (null → 빈 칸).
+ *  - 관련링크: 값이 있으면 <ExternalLink>로 감싸되 표시 텍스트는 "링크"만.
+ *  - 코멘트: 여러 줄 입력(줄바꿈 보존), 최대 200자. 표에서도 줄바꿈 그대로 표시.
  */
 
 type NewRow = {
@@ -39,7 +47,12 @@ const emptyNewRow: NewRow = {
   Wed_comment: '',
 };
 
-const NULLABLE_STRING_KEYS = ['Wed_stakeholder', 'Wed_link', 'Wed_comment'] as const;
+const NULLABLE_STRING_KEYS = [
+  'Wed_stakeholder',
+  'Wed_expense',
+  'Wed_link',
+  'Wed_comment',
+] as const;
 
 function extractMessage(err: unknown): string {
   if (err instanceof Error && err.message) return err.message;
@@ -50,6 +63,7 @@ function extractMessage(err: unknown): string {
 function normalizeEditPatch(patch: Partial<DecisionRecord>): Partial<DecisionRecord> {
   const normalized: Partial<DecisionRecord> = { ...patch };
 
+  // 빈/공백 문자열 → null (선택 컬럼).
   for (const key of NULLABLE_STRING_KEYS) {
     if (key in normalized) {
       const v = normalized[key];
@@ -59,26 +73,21 @@ function normalizeEditPatch(patch: Partial<DecisionRecord>): Partial<DecisionRec
     }
   }
 
-  if ('Wed_expense' in normalized) {
-    const v = normalized.Wed_expense as unknown;
-    if (v === null || v === undefined || v === '') {
-      normalized.Wed_expense = null;
-    } else if (typeof v === 'number') {
-      if (!Number.isInteger(v) || v < 0 || !Number.isFinite(v)) {
-        throw new Error('지출은 0 이상의 정수여야 합니다');
-      }
-      normalized.Wed_expense = v;
-    } else if (typeof v === 'string') {
-      const trimmed = v.trim();
-      if (trimmed === '') {
-        normalized.Wed_expense = null;
-      } else {
-        const parsed = Number(trimmed);
-        if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed < 0) {
-          throw new Error('지출은 0 이상의 정수여야 합니다');
-        }
-        normalized.Wed_expense = parsed;
-      }
+  // 항목: 필수 + 최대 10자.
+  if ('Wed_item' in normalized) {
+    const v = normalized.Wed_item;
+    if (typeof v === 'string') {
+      if (v.trim() === '') throw new Error('항목을 입력해주세요');
+      if (v.length > DECISION_ITEM_MAX)
+        throw new Error(`항목은 ${DECISION_ITEM_MAX}자 이내로 입력해주세요`);
+    }
+  }
+
+  // 코멘트: 최대 200자.
+  if ('Wed_comment' in normalized) {
+    const v = normalized.Wed_comment;
+    if (typeof v === 'string' && v.length > DECISION_COMMENT_MAX) {
+      throw new Error(`코멘트는 ${DECISION_COMMENT_MAX}자 이내로 입력해주세요`);
     }
   }
 
@@ -157,40 +166,95 @@ export function DecisionPage() {
   }, [newRow, isSubmittingAdd, refetch]);
 
   const columns: DataTableColumn<DecisionRecord>[] = [
-    { key: 'Wed_item', header: '항목' },
-    { key: 'Wed_stakeholder', header: '관계자' },
+    {
+      key: 'Wed_item',
+      header: '항목',
+      width: '110px',
+      renderEdit: (row, patch, setPatch) => {
+        const current =
+          'Wed_item' in patch ? ((patch.Wed_item as string) ?? '') : row.Wed_item;
+        return (
+          <input
+            className="field-input data-table-edit-input"
+            aria-label="항목"
+            maxLength={DECISION_ITEM_MAX}
+            value={current}
+            onChange={(e) =>
+              setPatch({ ...patch, Wed_item: e.target.value } as Partial<DecisionRecord>)
+            }
+          />
+        );
+      },
+    },
+    { key: 'Wed_stakeholder', header: '관계자', width: '90px' },
     {
       key: 'Wed_expense',
-      header: '지출',
-      render: (row) => (row.Wed_expense === null ? '-' : formatKRW(row.Wed_expense)),
+      header: '추가지출',
+      width: '84px',
+      render: (row) => (row.Wed_expense === null ? '' : row.Wed_expense),
       renderEdit: (row, patch, setPatch) => {
         const current =
           'Wed_expense' in patch
-            ? ((patch.Wed_expense as unknown as number | null) ?? null)
-            : row.Wed_expense;
+            ? ((patch.Wed_expense as string | null) ?? '')
+            : (row.Wed_expense ?? '');
         return (
-          <NumberField
-            label="지출"
-            hideLabel
+          <select
+            className="field-input data-table-edit-input"
+            aria-label="추가지출"
             value={current}
-            onChange={(v) =>
-              setPatch({ ...patch, Wed_expense: v } as Partial<DecisionRecord>)
+            onChange={(e) =>
+              setPatch({
+                ...patch,
+                Wed_expense: e.target.value === '' ? null : e.target.value,
+              } as Partial<DecisionRecord>)
             }
-          />
+          >
+            <option value="">-</option>
+            {EXPENSE_OPTIONS.map((o) => (
+              <option key={o} value={o}>
+                {o}
+              </option>
+            ))}
+          </select>
         );
       },
     },
     {
       key: 'Wed_link',
       header: '관련링크',
+      width: '80px',
       render: (row) =>
-        row.Wed_link ? (
-          <ExternalLink href={row.Wed_link}>{row.Wed_link}</ExternalLink>
+        row.Wed_link ? <ExternalLink href={row.Wed_link}>링크</ExternalLink> : '',
+    },
+    {
+      key: 'Wed_comment',
+      header: '코멘트',
+      width: '400px',
+      render: (row) =>
+        row.Wed_comment ? (
+          <div className="cell-multiline">{row.Wed_comment}</div>
         ) : (
           ''
         ),
+      renderEdit: (row, patch, setPatch) => {
+        const current =
+          'Wed_comment' in patch
+            ? ((patch.Wed_comment as string | null) ?? '')
+            : (row.Wed_comment ?? '');
+        return (
+          <textarea
+            className="field-input"
+            aria-label="코멘트"
+            maxLength={DECISION_COMMENT_MAX}
+            rows={3}
+            value={current}
+            onChange={(e) =>
+              setPatch({ ...patch, Wed_comment: e.target.value } as Partial<DecisionRecord>)
+            }
+          />
+        );
+      },
     },
-    { key: 'Wed_comment', header: '코멘트' },
   ];
 
   return (
@@ -237,6 +301,7 @@ export function DecisionPage() {
             <TextField
               label="항목"
               required
+              maxLength={DECISION_ITEM_MAX}
               value={newRow.Wed_item}
               onChange={(v) => setNewRow({ ...newRow, Wed_item: v })}
             />
@@ -245,15 +310,12 @@ export function DecisionPage() {
               value={newRow.Wed_stakeholder}
               onChange={(v) => setNewRow({ ...newRow, Wed_stakeholder: v })}
             />
-            <NumberField
-              label="지출"
-              value={newRow.Wed_expense === '' ? null : Number(newRow.Wed_expense)}
-              onChange={(v) =>
-                setNewRow({
-                  ...newRow,
-                  Wed_expense: v === null ? '' : String(v),
-                })
-              }
+            <Select
+              label="추가지출"
+              value={newRow.Wed_expense}
+              onChange={(v) => setNewRow({ ...newRow, Wed_expense: v })}
+              options={EXPENSE_OPTIONS}
+              placeholder="선택"
             />
             <TextField
               label="관련링크"
@@ -262,6 +324,9 @@ export function DecisionPage() {
             />
             <TextField
               label="코멘트"
+              multiline
+              rows={4}
+              maxLength={DECISION_COMMENT_MAX}
               value={newRow.Wed_comment}
               onChange={(v) => setNewRow({ ...newRow, Wed_comment: v })}
             />

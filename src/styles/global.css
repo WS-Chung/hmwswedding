@@ -234,6 +234,14 @@ a:focus-visible {
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
+/* multiline TextField(<textarea>)는 세로 리사이즈만 허용하고 줄바꿈을 보존한다. */
+textarea.field-input {
+  resize: vertical;
+  min-height: 96px;
+  line-height: var(--font-body-line-height);
+  white-space: pre-wrap;
+}
+
 .field-input:hover:not(:disabled) {
   border-color: var(--ink-muted-48);
 }
@@ -432,6 +440,12 @@ input[type='number'] {
 .data-table-edit-input {
   width: 100%;
   min-width: 0;
+}
+
+/* 여러 줄 텍스트(코멘트 등)를 표에서 줄바꿈 그대로 표시한다. */
+.cell-multiline {
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 /*

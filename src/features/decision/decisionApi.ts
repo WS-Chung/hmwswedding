@@ -24,8 +24,8 @@ export type DecisionRecord = {
   Wed_id: string;
   Wed_item: string;
   Wed_stakeholder: string | null;
-  /** 원 단위 정수, NULL 허용 (Requirement 3.5, 3.6). */
-  Wed_expense: number | null;
+  /** 추가지출 여부: '있음' | '없음' | NULL (드롭다운 선택값). */
+  Wed_expense: string | null;
   /** URL 또는 NULL (Requirement 3.5, 3.7). */
   Wed_link: string | null;
   Wed_comment: string | null;

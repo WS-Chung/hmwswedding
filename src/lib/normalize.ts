@@ -154,11 +154,15 @@ export function normalizeSchedule(
 // Decision
 // ────────────────────────────────────────────────────────────────────────────
 
+/** 결정사항 도메인 입력 제한. */
+export const DECISION_ITEM_MAX = 10 as const;
+export const DECISION_COMMENT_MAX = 200 as const;
+
 /** Raw form input for the DecisionPage inline editor / add row. */
 export type DecisionFormInput = {
   Wed_item?: string;
   Wed_stakeholder?: string;
-  /** Numeric text ("120000") — parsed to an integer or `null` in the payload. */
+  /** 추가지출 여부 드롭다운 값('있음' | '없음' | ''). */
   Wed_expense?: string;
   Wed_link?: string;
   Wed_comment?: string;
@@ -168,7 +172,7 @@ export type DecisionFormInput = {
 export type NormalizedDecision = {
   Wed_item: string;
   Wed_stakeholder: string | null;
-  Wed_expense: number | null;
+  Wed_expense: string | null;
   Wed_link: string | null;
   Wed_comment: string | null;
 };
@@ -189,22 +193,17 @@ export function normalizeDecision(
 ): NormalizeResult<NormalizedDecision> {
   const item = readField(input.Wed_item);
   const stakeholder = readField(input.Wed_stakeholder);
-  const expenseRaw = readField(input.Wed_expense);
+  const expense = readField(input.Wed_expense);
   const link = readField(input.Wed_link);
   const comment = readField(input.Wed_comment);
 
   const errors: string[] = [];
   if (!isPresent(item)) errors.push('항목을 입력해주세요');
+  else if (item.length > DECISION_ITEM_MAX)
+    errors.push(`항목은 ${DECISION_ITEM_MAX}자 이내로 입력해주세요`);
 
-  let expense: number | null = null;
-  if (isPresent(expenseRaw)) {
-    const parsed = Number(expenseRaw);
-    if (!isValidAmount(parsed)) {
-      errors.push('지출은 0 이상의 정수여야 합니다');
-    } else {
-      expense = parsed;
-    }
-  }
+  if (comment.length > DECISION_COMMENT_MAX)
+    errors.push(`코멘트는 ${DECISION_COMMENT_MAX}자 이내로 입력해주세요`);
 
   if (errors.length > 0) {
     return { ok: false, errors };
@@ -215,7 +214,7 @@ export function normalizeDecision(
     value: {
       Wed_item: item,
       Wed_stakeholder: emptyToNull(stakeholder),
-      Wed_expense: expense,
+      Wed_expense: emptyToNull(expense),
       Wed_link: emptyToNull(link),
       Wed_comment: emptyToNull(comment),
     },
