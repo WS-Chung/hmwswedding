@@ -29,7 +29,7 @@ create table if not exists "Wed_Decision" (
   "Wed_id"          uuid        primary key default gen_random_uuid(),
   "Wed_item"        text        not null,
   "Wed_stakeholder" text        null,
-  "Wed_expense"     numeric     null,
+  "Wed_expense"     text        null,   -- 추가지출 여부: '있음' | '없음' | NULL
   "Wed_link"        text        null,
   "Wed_comment"     text        null,
   "Wed_created_at"  timestamptz not null default now()
@@ -144,3 +144,8 @@ end $$;
 alter table "Wed_Budget_Item" add    column if not exists "Wed_payer" text null;
 alter table "Wed_Budget_Item" drop   column if exists     "Wed_product_name";
 alter table "Wed_Budget_Item" drop   column if exists     "Wed_installment";
+
+-- 결정사항의 '지출'(numeric 금액) → '추가지출'(있음/없음 텍스트)로 의미 변경.
+--   numeric → text 로 컬럼 타입을 전환한다. 기존 숫자 값은 문자열로 캐스팅된다.
+alter table "Wed_Decision"
+  alter column "Wed_expense" type text using "Wed_expense"::text;
