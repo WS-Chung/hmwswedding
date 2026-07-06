@@ -382,3 +382,68 @@ export function normalizeContact(
     },
   };
 }
+
+// ────────────────────────────────────────────────────────────────────────────
+// Travel
+// ────────────────────────────────────────────────────────────────────────────
+
+/** Raw form input for the TravelPage add/edit row. */
+export type TravelFormInput = {
+  Wed_item?: string;
+  /** Numeric text ("120000") — parsed to a non-negative integer or `null`. */
+  Wed_amount?: string;
+  Wed_link?: string;
+  Wed_note?: string;
+};
+
+/** Normalized payload ready for `travelApi.create` / `travelApi.update`. */
+export type NormalizedTravel = {
+  Wed_item: string;
+  Wed_amount: number | null;
+  Wed_link: string | null;
+  Wed_note: string | null;
+};
+
+/**
+ * Normalize a TravelPage row submission for `Wed_Travel`.
+ *
+ * Required: `Wed_item` (항목).
+ * Optional: `Wed_amount`, `Wed_link`, `Wed_note` — empty/whitespace inputs
+ * become `null`. `Wed_amount`, when provided, must parse to a non-negative
+ * integer via `isValidAmount`.
+ */
+export function normalizeTravel(
+  input: TravelFormInput,
+): NormalizeResult<NormalizedTravel> {
+  const item = readField(input.Wed_item);
+  const amountRaw = readField(input.Wed_amount);
+  const link = readField(input.Wed_link);
+  const note = readField(input.Wed_note);
+
+  const errors: string[] = [];
+  if (!isPresent(item)) errors.push('항목을 입력해주세요');
+
+  let amount: number | null = null;
+  if (isPresent(amountRaw)) {
+    const parsed = Number(amountRaw);
+    if (!isValidAmount(parsed)) {
+      errors.push('금액은 0 이상의 정수여야 합니다');
+    } else {
+      amount = parsed;
+    }
+  }
+
+  if (errors.length > 0) {
+    return { ok: false, errors };
+  }
+
+  return {
+    ok: true,
+    value: {
+      Wed_item: item,
+      Wed_amount: amount,
+      Wed_link: emptyToNull(link),
+      Wed_note: emptyToNull(note),
+    },
+  };
+}

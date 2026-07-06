@@ -80,6 +80,20 @@ create table if not exists "Wed_Contact" (
 );
 
 -- ---------------------------------------------------------------------------
+-- 6) Wed_Travel
+--    여행준비 페이지에서 사용하는 여행 준비 항목.
+--    컬럼: 항목(필수) · 금액(0 이상 정수, 선택) · 링크(URL, 선택) · 비고(선택).
+-- ---------------------------------------------------------------------------
+create table if not exists "Wed_Travel" (
+  "Wed_id"         uuid        primary key default gen_random_uuid(),
+  "Wed_item"       text        not null,
+  "Wed_amount"     numeric     null check ("Wed_amount" >= 0),
+  "Wed_link"       text        null,
+  "Wed_note"       text        null,
+  "Wed_created_at" timestamptz not null default now()
+);
+
+-- ---------------------------------------------------------------------------
 -- 초기 시딩 (Requirement 6.1): 6개의 카테고리.
 -- 재실행 시 중복 삽입을 방지하기 위해 on conflict 사용.
 -- ---------------------------------------------------------------------------
@@ -89,13 +103,14 @@ insert into "Wed_Budget_Category" ("Wed_name") values
 on conflict ("Wed_name") do nothing;
 
 -- ---------------------------------------------------------------------------
--- RLS 활성화 (Requirement 9.7): 다섯 테이블 전부.
+-- RLS 활성화 (Requirement 9.7): 대상 테이블 전부.
 -- ---------------------------------------------------------------------------
 alter table "Wed_Schedule"        enable row level security;
 alter table "Wed_Decision"        enable row level security;
 alter table "Wed_Budget_Category" enable row level security;
 alter table "Wed_Budget_Item"     enable row level security;
 alter table "Wed_Contact"         enable row level security;
+alter table "Wed_Travel"          enable row level security;
 
 -- ---------------------------------------------------------------------------
 -- Anon 역할에 대해 SELECT / INSERT / UPDATE / DELETE 정책을 생성한다.
@@ -106,7 +121,7 @@ declare
   t text;
 begin
   for t in select unnest(array[
-    'Wed_Schedule','Wed_Decision','Wed_Budget_Category','Wed_Budget_Item','Wed_Contact'
+    'Wed_Schedule','Wed_Decision','Wed_Budget_Category','Wed_Budget_Item','Wed_Contact','Wed_Travel'
   ]) loop
     execute format('drop policy if exists %I on %I', t || '_anon_select', t);
     execute format('drop policy if exists %I on %I', t || '_anon_insert', t);
@@ -154,3 +169,26 @@ alter table "Wed_Decision"
 --   해당 카테고리를 사용하는 예산 항목이 있으면 먼저 처리(이동/삭제)해야 한다.
 --   (사용 중인 항목이 없을 때만 아래 삭제가 정상 수행된다.)
 delete from "Wed_Budget_Category" where "Wed_name" in ('가전', '가구');
+
+-- 여행준비 페이지용 Wed_Travel 테이블 신규 생성 + RLS + anon 정책.
+--   (이미 배포된 DB에 아래 블록 전체를 실행하면 된다. 재실행 안전.)
+create table if not exists "Wed_Travel" (
+  "Wed_id"         uuid        primary key default gen_random_uuid(),
+  "Wed_item"       text        not null,
+  "Wed_amount"     numeric     null check ("Wed_amount" >= 0),
+  "Wed_link"       text        null,
+  "Wed_note"       text        null,
+  "Wed_created_at" timestamptz not null default now()
+);
+alter table "Wed_Travel" enable row level security;
+do $$
+begin
+  execute 'drop policy if exists "Wed_Travel_anon_select" on "Wed_Travel"';
+  execute 'drop policy if exists "Wed_Travel_anon_insert" on "Wed_Travel"';
+  execute 'drop policy if exists "Wed_Travel_anon_update" on "Wed_Travel"';
+  execute 'drop policy if exists "Wed_Travel_anon_delete" on "Wed_Travel"';
+  execute 'create policy "Wed_Travel_anon_select" on "Wed_Travel" for select to anon using (true)';
+  execute 'create policy "Wed_Travel_anon_insert" on "Wed_Travel" for insert to anon with check (true)';
+  execute 'create policy "Wed_Travel_anon_update" on "Wed_Travel" for update to anon using (true) with check (true)';
+  execute 'create policy "Wed_Travel_anon_delete" on "Wed_Travel" for delete to anon using (true)';
+end $$;

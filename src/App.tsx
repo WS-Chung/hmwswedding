@@ -29,6 +29,7 @@ import { SchedulePage } from './features/schedule/SchedulePage';
 import { DecisionPage } from './features/decision/DecisionPage';
 import { ContactPage } from './features/contact/ContactPage';
 import { BudgetPage } from './features/budget/BudgetPage';
+import { TravelPage } from './features/travel/TravelPage';
 import { BudgetAuthProvider } from './features/budget/BudgetAuthContext';
 
 export function App() {
@@ -41,6 +42,7 @@ export function App() {
             <Route path="/" element={<SchedulePage />} />
             <Route path="/decision" element={<DecisionPage />} />
             <Route path="/budget" element={<BudgetPage />} />
+            <Route path="/travel" element={<TravelPage />} />
             <Route path="/contact" element={<ContactPage />} />
           </Routes>
         </main>

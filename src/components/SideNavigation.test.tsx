@@ -30,17 +30,17 @@ function renderAt(path: string) {
 }
 
 describe('SideNavigation', () => {
-  it('renders four links with the correct labels and hrefs', () => {
+  it('renders five links with the correct labels and hrefs', () => {
     renderAt('/');
 
     const nav = screen.getByRole('navigation', { name: '주 메뉴' });
     const links = within(nav).getAllByRole('link');
 
-    expect(links).toHaveLength(4);
+    expect(links).toHaveLength(5);
 
     // NavLink resolves relative destinations against the current location, so
     // the resulting `href` values are the absolute route paths.
-    const [schedule, decision, budget, contact] = links;
+    const [schedule, decision, budget, travel, contact] = links;
     expect(schedule).toHaveTextContent('일정');
     expect(schedule).toHaveAttribute('href', '/');
 
@@ -49,6 +49,9 @@ describe('SideNavigation', () => {
 
     expect(budget).toHaveTextContent('예산관리');
     expect(budget).toHaveAttribute('href', '/budget');
+
+    expect(travel).toHaveTextContent('여행준비');
+    expect(travel).toHaveAttribute('href', '/travel');
 
     expect(contact).toHaveTextContent('연락처');
     expect(contact).toHaveAttribute('href', '/contact');

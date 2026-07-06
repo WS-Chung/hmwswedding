@@ -46,6 +46,7 @@ const NAV_ITEMS: readonly NavItem[] = [
   { to: '/',        label: '일정',     end: true },
   { to: '/decision', label: '결정사항' },
   { to: '/budget',   label: '예산관리' },
+  { to: '/travel',   label: '여행준비' },
   { to: '/contact',  label: '연락처' },
 ] as const;
 
