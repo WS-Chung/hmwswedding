@@ -207,12 +207,13 @@ export function TravelPage() {
   /**
    * 4개 카드가 공유하는 컬럼 정의: 항목 · 링크 · 금액 · 설명.
    *
-   * 카드 4장이 2열로 나란히 놓이므로 한 카드에 주어지는 폭이 좁다. 실제 입력량이
-   * 가장 적은 "설명"의 폭을 가장 크게 줄여 나머지 열이 뭉개지지 않게 했다.
-   * 그래도 넘치면 카드 본문이 가로 스크롤된다.
+   * 카드 4장이 2열로 나란히 놓이므로 한 카드에 주어지는 폭이 좁다. 항목·링크·
+   * 수량만 고정폭을 주고 "설명"은 폭을 비워 남는 공간을 받게 했다. 그래야 카드가
+   * 좁아질 때 설명만 줄어들고 표 전체가 가로로 넘치지 않아, 마지막 열인
+   * 수정/삭제 버튼이 항상 카드 우측 끝선에 남는다(예산관리 표와 동일한 거동).
    */
   const columns: DataTableColumn<TravelRecord>[] = [
-    { key: 'Wed_item', header: '항목', width: '140px' },
+    { key: 'Wed_item', header: '항목', width: '130px' },
     {
       key: 'Wed_link',
       header: '링크',
@@ -225,7 +226,7 @@ export function TravelPage() {
       // (DB 변경 없음 — 값의 의미만 금액에서 수량으로 바뀐다).
       key: 'Wed_amount',
       header: '수량',
-      width: '70px',
+      width: '64px',
       render: (row) => (row.Wed_amount === null ? '' : formatKRW(row.Wed_amount)),
       renderEdit: (row, patch, setPatch) => {
         const current =
@@ -247,7 +248,8 @@ export function TravelPage() {
     {
       key: 'Wed_note',
       header: '설명',
-      width: '140px',
+      // 폭을 지정하지 않는다. 나머지 열이 고정폭이므로 이 열이 남는 폭을 받고,
+      // 카드가 좁아질 때 가장 먼저 줄어든다(가로 스크롤 대신 여기서 흡수).
       render: (row) =>
         row.Wed_note ? <div className="cell-multiline">{row.Wed_note}</div> : '',
       renderEdit: (row, patch, setPatch) => {
@@ -270,10 +272,9 @@ export function TravelPage() {
     },
   ];
 
-  /** 카드 한 장 — 헤더(번호·타이틀·건수·합계·챙김 진행) + 자기 테이블. */
+  /** 카드 한 장 — 헤더(번호·타이틀·챙김 진행·추가) + 자기 테이블. */
   const renderCard = (bag: BagDefinition) => {
     const rows = byBag.get(bag.key) ?? [];
-    const sum = rows.reduce((acc, r) => acc + (r.Wed_amount ?? 0), 0);
     const packedCount = rows.filter((r) => packedIds.has(r.Wed_id)).length;
     const allPacked = rows.length > 0 && packedCount === rows.length;
 
@@ -290,13 +291,10 @@ export function TravelPage() {
             {bag.number}
           </span>
           <h2 className="luggage-card__title">{bag.title}</h2>
-          <span className="tag tag-navy">
-            {rows.length}건 · 총 {formatKRW(sum)}개
-          </span>
           {rows.length > 0 && (
             <span className={allPacked ? 'tag tag-done' : 'tag tag-muted'}>
               {allPacked ? '✓ ' : ''}
-              {packedCount}/{rows.length} 챙김
+              {rows.length}건 중 {packedCount}건 챙김
             </span>
           )}
           <div className="luggage-card__spacer">

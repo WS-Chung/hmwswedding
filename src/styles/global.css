@@ -1619,15 +1619,42 @@ input[type="number"] {
   border-radius: 0;
   box-shadow: none;
   overflow: auto; /* 세로·가로 스크롤 모두 여기서 */
+  /*
+   * 세로 스크롤바 자리를 항상 확보한다. 그렇지 않으면 행이 적어 스크롤바가
+   * 없는 카드와 많아서 있는 카드 사이에 표 폭이 달라지고, 우측 수정/삭제
+   * 버튼의 x 위치가 카드마다 어긋난다.
+   */
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
 }
 
 /*
- * 카드 폭이 좁아도 열을 뭉개지 않고 가로 스크롤로 흘려보낸다.
- * (컬럼 폭 합계에 맞춘 하한선)
+ * 스크롤바 자체도 얇게. 전역 스크롤바(10px)를 그대로 쓰면 그만큼 표 폭이
+ * 줄어들어 우측 버튼이 카드 끝선에서 더 멀어진다.
  */
-.luggage-card__body .data-table {
-  /* 체크박스 40 + 항목 140 + 링크 56 + 수량 70 + 설명 140 + 작업 96 */
-  min-width: 542px;
+.luggage-card__body .data-table-wrapper::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+/*
+ * 표에 `min-width`를 두지 않는다.
+ *
+ * 하한 폭을 주면 카드가 그보다 좁을 때(1440 폭 화면에서 카드 한 장은 약
+ * 510px) 표가 가로로 넘쳐, 마지막 열인 수정/삭제 버튼이 보이는 영역 오른쪽
+ * 밖으로 밀려난다. 예산관리 표처럼 표 폭 = 카드 폭으로 두면 액션 열이 항상
+ * 보이는 우측 끝선에 붙는다. 폭이 부족할 때는 "설명" 열(폭 미지정)이 먼저
+ * 줄어든다.
+ */
+
+/*
+ * 세로 스크롤바 게터(6px)만큼 액션 셀의 우측 패딩을 줄인다. 버튼과 카드 우측
+ * 끝선 사이 간격이 8 + 6 = 14px가 되어, 스크롤바가 없는 예산관리 표의 셀
+ * 패딩(14px)과 정확히 같아진다.
+ */
+.luggage-card__body .data-table th.data-table-actions-header,
+.luggage-card__body .data-table td.data-table-actions {
+  padding-right: 8px;
 }
 
 /*
@@ -1653,10 +1680,6 @@ input[type="number"] {
     overflow-x: visible;
   }
 
-  /* 카드형에서는 표 하한 폭을 풀어 세로로 쌓이게 한다. */
-  .luggage-card__body .data-table {
-    min-width: 0;
-  }
 
   .data-table {
     display: block;
@@ -1896,7 +1919,7 @@ input[type="number"] {
   /*
    * 여행준비: 카드 1열. 좁은 화면에서는 카드마다 고정 높이 스크롤 박스를 두는
    * 대신 내용만큼 늘어나게 하고(페이지 스크롤에 맡긴다), 표는 아래 카드형
-   * 규칙에 따라 세로로 쌓이므로 표 하한 폭도 풀어준다.
+   * 규칙에 따라 세로로 쌓인다.
    */
   .luggage-grid {
     grid-template-columns: 1fr;
@@ -1908,8 +1931,10 @@ input[type="number"] {
     overflow: visible;
   }
 
-  .luggage-card__body .data-table {
-    min-width: 0;
+  /* 스크롤이 없으므로 액션 셀 우측 패딩도 기본값으로 되돌린다. */
+  .luggage-card__body .data-table th.data-table-actions-header,
+  .luggage-card__body .data-table td.data-table-actions {
+    padding-right: 0;
   }
 
   .luggage-card__body .data-table thead th {
