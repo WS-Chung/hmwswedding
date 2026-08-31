@@ -24,10 +24,14 @@ import type { BagDefinition, BagKey } from './bags';
  *
  * 각 카드는 자기 가방(`Wed_bag`)에 속한 항목만 담는 독립 테이블을 갖고,
  * 카드 헤더의 "추가" 버튼 → 카드 내부 인라인 편집(✏️) → 삭제(🗑️)로 카드 단위
- * CRUD가 완결된다. 컬럼은 항목 · 링크 · 금액 · 설명 4개이며, 그 왼쪽에 챔김
+ * CRUD가 완결된다. 컬럼은 항목 · 링크 · 수량 · 설명 4개이며, 그 왼쪽에 챙김
  * 체크박스 컬럼이 하나 더 붙는다.
  *
- * 챔김 체크(취소선):
+ * "수량" 컬럼의 저장 위치는 기존 `Wed_Travel.Wed_amount`다. 화면 라벨만 금액에서
+ * 수량으로 바뀌었을 뿐이므로 DB 스키마 변경은 없다. 0 이상의 정수라는 검증
+ * 규칙도 그대로 유효하다.
+ *
+ * 챙김 체크(취소선):
  *   물건을 가방에 넣으면서 눈으로 소거하기 위한 **화면 전용** 표시다. 서버에
  *   저장하지 않고 이 컴포넌트의 로컬 state(`packedIds`)로만 관리하므로
  *   새로고침하면 초기화된다. 체크된 행은 `row-packed` 클래스로 전체가 취소선 +
@@ -64,7 +68,7 @@ function extractMessage(err: unknown): string {
   return '요청을 처리할 수 없습니다.';
 }
 
-/** 인라인 편집 patch 정규화: 빈 값 → null, 금액 정수 검증, 항목 필수. */
+/** 인라인 편집 patch 정규화: 빈 값 → null, 수량 정수 검증, 항목 필수. */
 function normalizeEditPatch(patch: Partial<TravelRecord>): Partial<TravelRecord> {
   const normalized: Partial<TravelRecord> = { ...patch };
 
@@ -91,7 +95,7 @@ function normalizeEditPatch(patch: Partial<TravelRecord>): Partial<TravelRecord>
     } else {
       const parsed = typeof v === 'number' ? v : Number(v);
       if (!Number.isFinite(parsed) || !Number.isInteger(parsed) || parsed < 0) {
-        throw new Error('금액은 0 이상의 정수여야 합니다');
+        throw new Error('수량은 0 이상의 정수여야 합니다');
       }
       normalized.Wed_amount = parsed;
     }
@@ -109,7 +113,7 @@ export function TravelPage() {
   const [addErrors, setAddErrors] = useState<string[]>([]);
   const [isSubmittingAdd, setIsSubmittingAdd] = useState(false);
   /**
-   * 챔김 표시된 행의 `Wed_id` 집합. 화면 전용 상태이므로 서버로 나가지 않고
+   * 챙김 표시된 행의 `Wed_id` 집합. 화면 전용 상태이므로 서버로 나가지 않고
    * 새로고침 시 비워진다.
    */
   const [packedIds, setPackedIds] = useState<ReadonlySet<string>>(new Set());
@@ -157,7 +161,7 @@ export function TravelPage() {
     [refetch],
   );
 
-  /** 챔김 표시 토글 — 로컬 state만 바꾼다(서버 요청 없음). */
+  /** 챙김 표시 토글 — 로컬 state만 바꾼다(서버 요청 없음). */
   const handleTogglePacked = useCallback((id: string) => {
     setPackedIds((current) => {
       const next = new Set(current);
@@ -208,7 +212,7 @@ export function TravelPage() {
    * 그래도 넘치면 카드 본문이 가로 스크롤된다.
    */
   const columns: DataTableColumn<TravelRecord>[] = [
-    { key: 'Wed_item', header: '항목', width: '130px' },
+    { key: 'Wed_item', header: '항목', width: '140px' },
     {
       key: 'Wed_link',
       header: '링크',
@@ -217,9 +221,11 @@ export function TravelPage() {
         row.Wed_link ? <ExternalLink href={row.Wed_link}>링크</ExternalLink> : '',
     },
     {
+      // 컬럼 라벨은 "수량"이지만 저장 컬럼은 기존 `Wed_amount`를 그대로 쓴다
+      // (DB 변경 없음 — 값의 의미만 금액에서 수량으로 바뀐다).
       key: 'Wed_amount',
-      header: '금액',
-      width: '90px',
+      header: '수량',
+      width: '70px',
       render: (row) => (row.Wed_amount === null ? '' : formatKRW(row.Wed_amount)),
       renderEdit: (row, patch, setPatch) => {
         const current =
@@ -228,7 +234,7 @@ export function TravelPage() {
             : row.Wed_amount;
         return (
           <NumberField
-            label="금액"
+            label="수량"
             hideLabel
             value={current}
             onChange={(v) =>
@@ -241,7 +247,7 @@ export function TravelPage() {
     {
       key: 'Wed_note',
       header: '설명',
-      width: '130px',
+      width: '140px',
       render: (row) =>
         row.Wed_note ? <div className="cell-multiline">{row.Wed_note}</div> : '',
       renderEdit: (row, patch, setPatch) => {
@@ -264,7 +270,7 @@ export function TravelPage() {
     },
   ];
 
-  /** 카드 한 장 — 헤더(번호·타이틀·건수·합계·챔김 진행) + 자기 테이블. */
+  /** 카드 한 장 — 헤더(번호·타이틀·건수·합계·챙김 진행) + 자기 테이블. */
   const renderCard = (bag: BagDefinition) => {
     const rows = byBag.get(bag.key) ?? [];
     const sum = rows.reduce((acc, r) => acc + (r.Wed_amount ?? 0), 0);
@@ -285,12 +291,12 @@ export function TravelPage() {
           </span>
           <h2 className="luggage-card__title">{bag.title}</h2>
           <span className="tag tag-navy">
-            {rows.length}건 · {formatKRW(sum)}원
+            {rows.length}건 · 총 {formatKRW(sum)}개
           </span>
           {rows.length > 0 && (
             <span className={allPacked ? 'tag tag-done' : 'tag tag-muted'}>
               {allPacked ? '✓ ' : ''}
-              {packedCount}/{rows.length} 챔김
+              {packedCount}/{rows.length} 챙김
             </span>
           )}
           <div className="luggage-card__spacer">
@@ -314,10 +320,10 @@ export function TravelPage() {
                 className="pack-checkbox"
                 checked={packedIds.has(row.Wed_id)}
                 onChange={() => handleTogglePacked(row.Wed_id)}
-                aria-label={`${row.Wed_item} 챔김`}
+                aria-label={`${row.Wed_item} 챙김`}
               />
             )}
-            leadingControlLabel="챔김"
+            leadingControlLabel="챙김"
             rowClassName={(row) =>
               packedIds.has(row.Wed_id) ? 'row-packed' : undefined
             }
@@ -380,7 +386,7 @@ export function TravelPage() {
           onChange={(v) => setNewRow({ ...newRow, Wed_link: v })}
         />
         <NumberField
-          label="금액"
+          label="수량"
           value={newRow.Wed_amount === '' ? null : Number(newRow.Wed_amount)}
           onChange={(v) =>
             setNewRow({

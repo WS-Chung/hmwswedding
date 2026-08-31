@@ -53,7 +53,7 @@ create index if not exists "Wed_Travel_bag_idx" on "Wed_Travel" ("Wed_bag");
 
 `Wed_bag` 허용 값은 `hyemin_carrier` · `hyemin_cabin` · `unseok_carrier` · `unseok_cabin` 네 개이며, 표시 라벨은 `src/features/travel/bags.ts`에서만 관리한다.
 
-여행준비 표 좌측의 "챔김" 체크박스는 눈으로 소거하기 위한 **화면 전용** 표시다. DB에 저장하지 않으므로 새로고침하면 초기화된다.
+여행준비 표 좌측의 "챙김" 체크박스는 눈으로 소거하기 위한 **화면 전용** 표시다. DB에 저장하지 않으므로 새로고침하면 초기화된다.
 
 ### 3. Supabase anon 키 삽입
 

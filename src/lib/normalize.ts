@@ -392,7 +392,10 @@ export type TravelFormInput = {
   /** 가방(카드) 식별자 — `features/travel/bags.ts`의 BagKey 문자열. */
   Wed_bag?: string;
   Wed_item?: string;
-  /** Numeric text ("120000") — parsed to a non-negative integer or `null`. */
+  /**
+   * 수량. 화면 라벨은 "수량"이지만 저장 컬럼은 기존 `Wed_amount`를 그대로 쓴다.
+   * Numeric text ("3") — parsed to a non-negative integer or `null`.
+   */
   Wed_amount?: string;
   Wed_link?: string;
   Wed_note?: string;
@@ -411,9 +414,9 @@ export type NormalizedTravel = {
  * Normalize a TravelPage row submission for `Wed_Travel`.
  *
  * Required: `Wed_bag` (가방 구분 — 어떤 카드에 담기는지), `Wed_item` (항목).
- * Optional: `Wed_amount`, `Wed_link`, `Wed_note` — empty/whitespace inputs
- * become `null`. `Wed_amount`, when provided, must parse to a non-negative
- * integer via `isValidAmount`.
+ * Optional: `Wed_amount`(화면 라벨 "수량"), `Wed_link`, `Wed_note` —
+ * empty/whitespace inputs become `null`. `Wed_amount`, when provided, must
+ * parse to a non-negative integer via `isValidAmount`.
  *
  * `Wed_bag`은 사용자가 직접 입력하는 값이 아니라 "어느 카드의 추가 버튼을
  * 눌렀는지"에서 결정되므로, 비어 있다면 폼 조립 자체가 잘못된 것이다. 따라서
@@ -436,7 +439,7 @@ export function normalizeTravel(
   if (isPresent(amountRaw)) {
     const parsed = Number(amountRaw);
     if (!isValidAmount(parsed)) {
-      errors.push('금액은 0 이상의 정수여야 합니다');
+      errors.push('수량은 0 이상의 정수여야 합니다');
     } else {
       amount = parsed;
     }

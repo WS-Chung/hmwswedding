@@ -74,7 +74,7 @@ export interface DataTableProps<T extends { Wed_id: string }> {
   leadingControlLabel?: string;
   /**
    * 행 단위 부가 클래스. 상태에 따라 `<tr>` 전체의 표현을 바꿀 때 쓴다
-   * (예: 챔김 완료 행의 취소선 처리 `row-packed`).
+   * (예: 챙김 완료 행의 취소선 처리 `row-packed`).
    */
   rowClassName?: (row: T) => string | undefined;
   /** If provided, a top-right "추가" PillButton is rendered. */

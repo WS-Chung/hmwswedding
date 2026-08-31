@@ -200,7 +200,7 @@ a:focus-visible {
   border-color: var(--brand-ring-25);
 }
 
-/* 완료(전부 챔김) 표시 — 킷 §4.4: 흰 바탕의 success는 emerald-600/700 + 틴트 100 */
+/* 완료(전부 챙김) 표시 — 킷 §4.4: 흰 바탕의 success는 emerald-600/700 + 틴트 100 */
 .tag-done {
   background: var(--emerald-100);
   color: var(--emerald-700);
@@ -808,7 +808,7 @@ input[type="number"] {
   white-space: nowrap;
 }
 
-/* --- 선행 컨트롤 컬럼 (챔김 체크박스) --- */
+/* --- 선행 컨트롤 컬럼 (챙김 체크박스) --- */
 
 .data-table-leading-col {
   width: 40px;
@@ -837,7 +837,7 @@ input[type="number"] {
 }
 
 /*
- * 챔김 완료 행: 체크박스·액션 셀을 제외한 모든 셀에 취소선을 긋고 색을 낮춰
+ * 챙김 완료 행: 체크박스·액션 셀을 제외한 모든 셀에 취소선을 긋고 색을 낮춰
  * 소거된 항목임을 표시한다. `text-decoration`은 자손으로 전파되므로 셀 안의
  * 링크·다중행 텍스트에도 함께 적용된다.
  */
@@ -1595,7 +1595,14 @@ input[type="number"] {
   min-height: 0;
   min-width: 0;
   overflow: hidden;
-  padding: var(--space-sm) var(--space-md) var(--space-md);
+  /*
+   * 좌우 패딩을 두지 않는다. 예산관리 페이지처럼 표 래퍼가 곧 카드 폭이 되어
+   * 셀 자체의 패딩(14px)만 남고, 그 결과 1열 텍스트와 우측 수정/삭제 버튼이
+   * 카드 좌우 끝선에 정확히 맞는다.
+   * 하단 패딩은 마지막 행이 카드의 라운드 코너와 겹치지 않게 하려고 남긴다
+   * (스크롤 클리핑은 패딩이 없는 표 래퍼가 담당하므로 행이 새지 않는다).
+   */
+  padding: 0 0 var(--space-sm);
   container-type: inline-size;
 }
 
@@ -1619,7 +1626,8 @@ input[type="number"] {
  * (컬럼 폭 합계에 맞춘 하한선)
  */
 .luggage-card__body .data-table {
-  min-width: 560px;
+  /* 체크박스 40 + 항목 140 + 링크 56 + 수량 70 + 설명 140 + 작업 96 */
+  min-width: 542px;
 }
 
 /*
@@ -1704,7 +1712,7 @@ input[type="number"] {
     color: var(--text-meta);
   }
 
-  /* 챔김 체크박스 셀은 라벨을 뒤에 붙여 한 줄로 컴팩트하게. */
+  /* 챙김 체크박스 셀은 라벨을 뒤에 붙여 한 줄로 컴팩트하게. */
   .data-table td.data-table-leading {
     width: auto !important;
     justify-content: flex-start;
@@ -1714,7 +1722,7 @@ input[type="number"] {
   }
 
   .data-table td.data-table-leading::after {
-    content: "챔김";
+    content: "챙김";
     font-size: var(--fs-table-label);
     font-weight: 600;
     text-transform: uppercase;
@@ -1969,7 +1977,7 @@ input[type="number"] {
     color: var(--text-meta);
   }
 
-  /* 챔김 체크박스 셀은 라벨을 뒤에 붙여 한 줄로 컴팩트하게. */
+  /* 챙김 체크박스 셀은 라벨을 뒤에 붙여 한 줄로 컴팩트하게. */
   .data-table td.data-table-leading {
     width: auto !important;
     justify-content: flex-start;
@@ -1979,7 +1987,7 @@ input[type="number"] {
   }
 
   .data-table td.data-table-leading::after {
-    content: "챔김";
+    content: "챙김";
     font-size: var(--fs-table-label);
     font-weight: 600;
     text-transform: uppercase;
