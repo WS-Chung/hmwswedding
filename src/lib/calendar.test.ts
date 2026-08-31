@@ -7,15 +7,31 @@
 import { describe, it, expect } from 'vitest';
 
 import {
-  DEFAULT_MONTH,
+  currentYearMonth,
   computeHighlightedDates,
   monthGridDays,
   shiftMonth,
 } from './calendar';
 
-describe('DEFAULT_MONTH', () => {
-  it('is fixed at 2026년 7월 (Requirement 2.2)', () => {
-    expect(DEFAULT_MONTH).toEqual({ year: 2026, month: 7 });
+describe('currentYearMonth', () => {
+  it('returns the local year/month of the given instant', () => {
+    // 로컬 시간 기준으로 구성한 시각이므로 실행 환경 타임존과 무관하게 9월이다.
+    expect(currentYearMonth(new Date(2026, 8, 1, 8, 0, 0))).toEqual({
+      year: 2026,
+      month: 9,
+    });
+    expect(currentYearMonth(new Date(2025, 11, 31, 23, 59, 0))).toEqual({
+      year: 2025,
+      month: 12,
+    });
+  });
+
+  it('defaults to the system clock', () => {
+    const now = new Date();
+    expect(currentYearMonth()).toEqual({
+      year: now.getFullYear(),
+      month: now.getMonth() + 1,
+    });
   });
 });
 

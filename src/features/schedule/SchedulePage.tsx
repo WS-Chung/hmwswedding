@@ -5,7 +5,7 @@ import { CalendarHeader } from '../../components/CalendarHeader';
 import { InlineError } from '../../components/InlineError';
 import { PageShell } from '../../components/PageShell';
 import {
-  DEFAULT_MONTH,
+  currentYearMonth,
   computeHighlightedDates,
   monthGridDays,
   shiftMonth,
@@ -24,8 +24,9 @@ import type { ScheduleRecord } from './scheduleApi';
  * `<AddScheduleForm>`.
  *
  * State (design.md § Schedule_Manager · React state):
- *   - `currentMonth`  : { year, month } — initialized to `DEFAULT_MONTH`
- *                       (2026년 7월, Requirement 2.2).
+ *   - `currentMonth`  : { year, month } — 마운트 시 시스템 시계의 이번 달로
+ *                       초기화된다(`currentYearMonth()`). 8월에 접속하면 8월,
+ *                       9월에 접속하면 9월 달력이 뜬다.
  *   - `selectedDate`  : ISO string of the day the user clicked on the grid,
  *                       or `null` when nothing is selected. Drives both the
  *                       grid selection outline and the DaySchedulesPanel
@@ -47,7 +48,12 @@ import type { ScheduleRecord } from './scheduleApi';
  *     pre-request value while `errorMsg` renders the standardized message.
  */
 export function SchedulePage() {
-  const [currentMonth, setCurrentMonth] = useState(DEFAULT_MONTH);
+  /*
+   * lazy initializer로 마운트 시 한 번만 시스템 시각을 읽는다. 렌더마다
+   * `new Date()`를 만들지 않으므로, 사용자가 이전/다음 달로 이동한 상태가
+   * 리렌더에 의해 이번 달로 되돌아가는 일이 없다.
+   */
+  const [currentMonth, setCurrentMonth] = useState(() => currentYearMonth());
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [records, setRecords] = useState<ScheduleRecord[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);

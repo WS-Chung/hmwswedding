@@ -4,7 +4,7 @@
  * Reference: design.md § Schedule_Manager · 날짜 유틸 (`lib/calendar.ts`).
  *
  * Exports:
- *   - DEFAULT_MONTH          — 앱 최초 진입 시 달력 초기 표시 월 (Requirement 2.2)
+ *   - currentYearMonth       — 시스템 시계의 이번 달 (달력 초기 표시 월)
  *   - shiftMonth             — 월 ±1 이동, 12→1 / 1→12 시 연도 이월 (Requirement 2.3)
  *   - monthGridDays          — 7의 배수 길이 달력 grid; leading/trailing 셀은
  *                              이전/다음 달에서 채워 `inMonth: false` 로 표시
@@ -32,11 +32,22 @@ export type DayCell = {
 };
 
 /**
- * 앱 최초 진입 시 달력 초기 표시 월.
+ * 앱 최초 진입 시 달력 초기 표시 월 — 시스템 시계의 "이번 달".
  *
- * Validates: Requirements 2.2
+ * 타임존 주의: 이 모듈의 나머지 함수(`monthGridDays` 등)는 그리드 좌표가
+ * 접속 지역에 따라 흔들리지 않도록 의도적으로 UTC로 계산한다. 반면 "지금이
+ * 몇 월인가"는 사용자가 보는 벽시계 기준이어야 하므로 여기서는 **로컬 시간**을
+ * 쓴다. 예를 들어 KST 9월 1일 08:00은 UTC로는 아직 8월 31일이지만, 사용자에게
+ * 이번 달은 9월이다. `Wed_date`가 타임존 없는 DATE 값이라는 점과도 정합한다.
+ *
+ * `now`를 인자로 받아 순수 함수로 유지한다(호출부는 인자를 생략한다).
+ *
+ * @param now 기준 시각. 기본값은 호출 시점의 시스템 시각.
+ * @returns 해당 시각이 속한 연/월 (month는 1..12).
  */
-export const DEFAULT_MONTH: YearMonth = { year: 2026, month: 7 } as const;
+export function currentYearMonth(now: Date = new Date()): YearMonth {
+  return { year: now.getFullYear(), month: now.getMonth() + 1 };
+}
 
 /** 두 자리 zero-padding (0..9 → "00".."09"). */
 function pad2(n: number): string {
