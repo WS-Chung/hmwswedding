@@ -82,16 +82,26 @@ create table if not exists "Wed_Contact" (
 -- ---------------------------------------------------------------------------
 -- 6) Wed_Travel
 --    여행준비 페이지에서 사용하는 여행 준비 항목.
---    컬럼: 항목(필수) · 금액(0 이상 정수, 선택) · 링크(URL, 선택) · 비고(선택).
+--    컬럼: 가방(필수) · 항목(필수) · 금액(0 이상 정수, 선택) · 링크(선택) · 설명(선택).
+--
+--    Wed_bag 은 항목이 담기는 수하물(카드)을 가리킨다. 앱은 정확히 4장의
+--    카드를 렌더하며 다음 4개 값만 사용한다(src/features/travel/bags.ts):
+--      'hyemin_carrier' 혜민 캐리어   (큰 카드)
+--      'hyemin_cabin'   혜민 기내가방 (작은 카드)
+--      'unseok_carrier' 운석 캐리어   (큰 카드)
+--      'unseok_cabin'   운석 기내가방 (작은 카드)
+--    표시 라벨은 앱에서만 관리하므로 문구 변경 시 DB 변경은 필요 없다.
 -- ---------------------------------------------------------------------------
 create table if not exists "Wed_Travel" (
   "Wed_id"         uuid        primary key default gen_random_uuid(),
+  "Wed_bag"        text        not null default 'hyemin_carrier',
   "Wed_item"       text        not null,
   "Wed_amount"     numeric     null check ("Wed_amount" >= 0),
   "Wed_link"       text        null,
   "Wed_note"       text        null,
   "Wed_created_at" timestamptz not null default now()
 );
+create index if not exists "Wed_Travel_bag_idx" on "Wed_Travel" ("Wed_bag");
 
 -- ---------------------------------------------------------------------------
 -- 초기 시딩 (Requirement 6.1): 6개의 카테고리.
@@ -174,6 +184,7 @@ delete from "Wed_Budget_Category" where "Wed_name" in ('가전', '가구');
 --   (이미 배포된 DB에 아래 블록 전체를 실행하면 된다. 재실행 안전.)
 create table if not exists "Wed_Travel" (
   "Wed_id"         uuid        primary key default gen_random_uuid(),
+  "Wed_bag"        text        not null default 'hyemin_carrier',
   "Wed_item"       text        not null,
   "Wed_amount"     numeric     null check ("Wed_amount" >= 0),
   "Wed_link"       text        null,
@@ -192,3 +203,21 @@ begin
   execute 'create policy "Wed_Travel_anon_update" on "Wed_Travel" for update to anon using (true) with check (true)';
   execute 'create policy "Wed_Travel_anon_delete" on "Wed_Travel" for delete to anon using (true)';
 end $$;
+
+-- ---------------------------------------------------------------------------
+-- 여행준비 4카드(혜민/운석 × 캐리어/기내가방) 도입에 따른 Wed_Travel 확장.
+--
+--   이미 배포된 DB에는 `create table if not exists`가 컬럼을 추가하지 않으므로
+--   아래 두 문장을 Supabase SQL Editor에서 실행해야 한다. 둘 다 idempotent다.
+--
+--   기존 행은 DEFAULT 값('hyemin_carrier')을 갖게 되어 "혜민 캐리어" 카드에
+--   모두 표시된다. 다른 카드로 옮기려면 UPDATE로 Wed_bag 값을 바꾸면 된다.
+--     허용 값: 'hyemin_carrier' | 'hyemin_cabin' | 'unseok_carrier' | 'unseok_cabin'
+-- ---------------------------------------------------------------------------
+alter table "Wed_Travel"
+  add column if not exists "Wed_bag" text not null default 'hyemin_carrier';
+
+create index if not exists "Wed_Travel_bag_idx" on "Wed_Travel" ("Wed_bag");
+
+-- 참고: 표 좌측의 "챔김" 체크박스(취소선 표시)는 화면 전용 상태이며 DB에
+--   저장하지 않는다. 따라서 이를 위한 컬럼은 존재하지 않는다.

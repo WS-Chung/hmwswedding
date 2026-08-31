@@ -125,6 +125,9 @@ function BudgetPageInner() {
   return (
     <PageShell
       title="예산관리"
+      number="03"
+      eyebrow="Budget"
+      description="카테고리별 지출 내역과 총 예산 대비 잔여 예산을 관리합니다."
       toolbar={
         <PillButton variant="secondary" onClick={() => setShowCatMgr(true)}>
           카테고리 관리

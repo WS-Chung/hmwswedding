@@ -11,9 +11,16 @@
 import { supabase } from '../../lib/supabaseClient';
 import { mapSupabaseError } from '../../lib/errorMapping';
 
+import type { BagKey } from './bags';
+
 /** `Wed_Travel` 테이블의 한 행. */
 export type TravelRecord = {
   Wed_id: string;
+  /**
+   * 이 항목이 속한 가방(카드) 식별자. `bags.ts`의 `BagKey` 값 중 하나.
+   * DB에는 NOT NULL + DEFAULT 'hyemin_carrier'로 정의되어 있다.
+   */
+  Wed_bag: BagKey;
   Wed_item: string;
   /** 금액: 0 이상 정수 또는 NULL(선택). */
   Wed_amount: number | null;

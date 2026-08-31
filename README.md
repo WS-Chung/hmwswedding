@@ -10,6 +10,7 @@
 - **데이터**: Supabase JS SDK (`@supabase/supabase-js`)
 - **테스트**: Vitest + Testing Library + fast-check
 - **배포**: Vercel (정적 자산)
+- **디자인 시스템**: DrimAES Light Web UI Kit v1.0 (`DA_WEBUI_KIT.md`) — 회사 8색 · 네이비 프라이머리 · 흰 페이퍼 카드 · Pretendard
 
 ## 페이지 구성
 
@@ -18,6 +19,7 @@
 | `/` | 일정 (Schedule) | 2026년 7월 달력을 초기 표시. 날짜 클릭 시 해당 일자 일정 CRUD |
 | `/decision` | 결정사항 (Decision) | 결정 항목 CRUD |
 | `/budget` | 예산관리 (Budget) | 비밀번호 게이트 통과 후 총액/사용/잔여 요약 + 항목·카테고리 CRUD |
+| `/travel` | 여행준비 (Travel) | 캐리어/기내가방 4카드(혜민·운석 × 캐리어·기내가방)별 항목 CRUD |
 | `/contact` | 연락처 (Contact) | 연락처 CRUD |
 
 초기 진입 URL은 `/`(일정 페이지)로, 2026년 7월 달력이 렌더링된다 (Requirement 1.4, 2.2).
@@ -38,7 +40,20 @@ npm install
 
 ### 2. Supabase 스키마 적용
 
-Supabase 대시보드 → **SQL Editor** → New query 에 `db/schema.sql` 전체를 붙여넣고 실행한다. 5개 테이블(`Wed_Schedule`, `Wed_Decision`, `Wed_Budget_Category`, `Wed_Budget_Item`, `Wed_Contact`)이 생성되고 초기 카테고리 8개가 시드된다. RLS 정책도 함께 적용된다.
+Supabase 대시보드 → **SQL Editor** → New query 에 `db/schema.sql` 전체를 붙여넣고 실행한다. 6개 테이블(`Wed_Schedule`, `Wed_Decision`, `Wed_Budget_Category`, `Wed_Budget_Item`, `Wed_Contact`, `Wed_Travel`)이 생성되고 초기 카테고리가 시드된다. RLS 정책도 함께 적용된다.
+
+이미 운영 중인 DB라면 파일 하단의 마이그레이션 블록만 실행하면 된다. 여행준비 4카드 도입에 필요한 컬럼은 다음 두 문장이다(재실행 안전).
+
+```sql
+alter table "Wed_Travel"
+  add column if not exists "Wed_bag" text not null default 'hyemin_carrier';
+
+create index if not exists "Wed_Travel_bag_idx" on "Wed_Travel" ("Wed_bag");
+```
+
+`Wed_bag` 허용 값은 `hyemin_carrier` · `hyemin_cabin` · `unseok_carrier` · `unseok_cabin` 네 개이며, 표시 라벨은 `src/features/travel/bags.ts`에서만 관리한다.
+
+여행준비 표 좌측의 "챔김" 체크박스는 눈으로 소거하기 위한 **화면 전용** 표시다. DB에 저장하지 않으므로 새로고침하면 초기화된다.
 
 ### 3. Supabase anon 키 삽입
 
@@ -130,6 +145,7 @@ Vitest + Testing Library + fast-check 기반 단위/속성 테스트 스위트�
 
 ## 참고 문서
 
-- `UI_Design.md` — 디자인 토큰과 컴포넌트 시각 규격
+- `DA_WEBUI_KIT.md` — **현재 적용 중인** 디자인 시스템 (토큰은 `src/styles/tokens.css`, 컴포넌트 규칙은 `src/styles/global.css`)
+- `UI_Design.md` — 이전(Apple 스타일) 디자인 분석 문서. 참고용으로만 보존
 - `.kiro/specs/wedding-planner/requirements.md` — EARS 형식 수용 기준
 - `.kiro/specs/wedding-planner/design.md` — 아키텍처 및 컴포넌트 계약

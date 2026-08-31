@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import type { ReactNode } from 'react';
 
 /**
@@ -38,7 +39,10 @@ export function Modal({ isOpen, onClose, title, children, actions, ariaLabel }: 
 
   if (!isOpen) return null;
 
-  return (
+  // `document.body`로 포털한다. 호출 위치가 `transform`/`container-type`을 가진
+  // 조상(카드 hover 리프트, 컨테이너 쿼리 컨텍스트) 아래일 수 있고, 두 속성은
+  // `position: fixed` 자손의 컨테이닝 블록을 만들어 오버레이 정렬을 깨뜨린다.
+  return createPortal(
     <div
       className="modal-overlay"
       role="dialog"
@@ -57,6 +61,7 @@ export function Modal({ isOpen, onClose, title, children, actions, ariaLabel }: 
         <div className="modal-body">{children}</div>
         {actions && <div className="modal-actions">{actions}</div>}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

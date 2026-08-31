@@ -1,7 +1,7 @@
-// Global design tokens must load before global styles so custom properties
-// referenced from global.css resolve. Both are pulled in here at the top of
-// the entry module so every subsequent component inherits the Apple-style
-// design system (Requirements 10.1–10.6).
+// 디자인 토큰이 전역 스타일보다 먼저 로드되어야 global.css의 custom property
+// 참조가 해석된다. 두 파일 모두 엔트리 최상단에서 import 하므로 이후 모든
+// 컴포넌트가 DrimAES Light Web UI Kit v1.0 디자인 시스템을 상속한다
+// (DA_WEBUI_KIT.md §4 컬러 · §5 타이포 · §7.3 globals).
 import './styles/tokens.css';
 import './styles/global.css';
 

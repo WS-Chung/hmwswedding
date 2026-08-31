@@ -8,7 +8,7 @@ import { DataTable } from '../../components/DataTable';
 import type { DataTableColumn } from '../../components/DataTable';
 import { InlineError } from '../../components/InlineError';
 import { Modal } from '../../components/Modal';
-import { groupByCategory } from '../../lib/budget';
+import { groupByCategory, PAYERS } from '../../lib/budget';
 import { normalizeBudgetItem } from '../../lib/normalize';
 import { formatKRW } from '../../lib/format';
 import { isValidAmount } from '../../lib/validators';
@@ -103,8 +103,14 @@ type AddFormState = {
   Wed_note: string;
 };
 
-/** 결제자 드롭다운 옵션(고정 2인). */
-const PAYER_OPTIONS = ['혜민', '운석'] as const;
+/**
+ * 결제자 드롭다운 옵션(고정 2인).
+ *
+ * `lib/budget.ts`의 `PAYERS`를 그대로 쓴다. BudgetSummary가 같은 상수로
+ * 결제자별 지출을 분할 집계하므로, 목록이 두 곳에서 갈라지면 요약의 "미지정"
+ * 금액이 엉뚱하게 잡힌다.
+ */
+const PAYER_OPTIONS = PAYERS;
 
 /** 빈 폼 초기값. `Wed_category`는 `newRowCategory`가 open 시 별도로 채운다. */
 function emptyAddForm(category: string): AddFormState {
@@ -412,36 +418,13 @@ export function BudgetItemTable(props: BudgetItemTableProps) {
             key={categoryName}
             className="budget-category-section"
             aria-label={`카테고리: ${categoryName}`}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: 'var(--space-sm)',
-              marginBottom: 'var(--space-xl)',
-            }}
           >
-            <div
-              className="budget-category-header"
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 'var(--space-md)',
-              }}
-            >
-              <h3
-                style={{
-                  margin: 0,
-                  fontFamily: 'var(--font-display)',
-                  fontSize: 'var(--font-body-strong-size)',
-                  fontWeight: 'var(--font-body-strong-weight)',
-                  lineHeight: 'var(--font-body-strong-line-height)',
-                  color: 'var(--ink)',
-                }}
-              >
-                {categoryName}
-              </h3>
-              <div style={{ marginLeft: 'auto' }}>
+            <div className="budget-category-header">
+              <h3 className="budget-category-title">{categoryName}</h3>
+              <span className="tag tag-navy">{rows.length}건</span>
+              <div className="budget-category-spacer">
                 <PillButton
-                  variant="primary"
+                  variant="secondary"
                   onClick={() => handleOpenAdd(categoryName)}
                   disabled={submitting}
                 >

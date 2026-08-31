@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { ReactNode } from 'react';
 import { PillButton } from './PillButton';
 
@@ -63,6 +64,19 @@ type SortDir = 'asc' | 'desc';
 export interface DataTableProps<T extends { Wed_id: string }> {
   rows: T[];
   columns: DataTableColumn<T>[];
+  /**
+   * 있으면 모든 열보다 왼쪽에 폭이 좁은 컨트롤 컬럼을 추가하고, 각 행에 대해
+   * 이 함수가 반환한 노드를 렌더한다(체크박스 등). 편집 모드에서도 그대로
+   * 유지되므로 편집 중에도 체크 상태를 바꿀 수 있다.
+   */
+  leadingControl?: (row: T) => ReactNode;
+  /** 선행 컨트롤 컬럼의 헤더에 붙는 스크린리더 전용 라벨. */
+  leadingControlLabel?: string;
+  /**
+   * 행 단위 부가 클래스. 상태에 따라 `<tr>` 전체의 표현을 바꿀 때 쓴다
+   * (예: 챔김 완료 행의 취소선 처리 `row-packed`).
+   */
+  rowClassName?: (row: T) => string | undefined;
   /** If provided, a top-right "추가" PillButton is rendered. */
   onAdd?: () => void;
   /** Called with the accumulated patch when 저장 is pressed. */
@@ -126,6 +140,9 @@ export function DataTable<T extends { Wed_id: string }>(
   const {
     rows,
     columns,
+    leadingControl,
+    leadingControlLabel = '선택',
+    rowClassName,
     onAdd,
     onSaveEdit,
     onDelete,
@@ -226,7 +243,9 @@ export function DataTable<T extends { Wed_id: string }>(
     }
   }
 
-  const columnCount = columns.length + 1; // +1 for the action column
+  const hasLeading = typeof leadingControl === 'function';
+  // 데이터 컬럼 + 액션 컬럼 (+ 선행 컨트롤 컬럼)
+  const columnCount = columns.length + 1 + (hasLeading ? 1 : 0);
 
   return (
     <div className="data-table-wrapper">
@@ -240,6 +259,7 @@ export function DataTable<T extends { Wed_id: string }>(
 
       <table className="data-table">
         <colgroup>
+          {hasLeading ? <col className="data-table-leading-col" /> : null}
           {columns.map((col) => (
             <col
               key={String(col.key)}
@@ -250,6 +270,11 @@ export function DataTable<T extends { Wed_id: string }>(
         </colgroup>
         <thead>
           <tr>
+            {hasLeading ? (
+              <th scope="col" className="data-table-leading">
+                <span className="visually-hidden">{leadingControlLabel}</span>
+              </th>
+            ) : null}
             {columns.map((col) => {
               const key = String(col.key);
               const isSortable = col.sortable !== false;
@@ -293,8 +318,18 @@ export function DataTable<T extends { Wed_id: string }>(
           ) : (
             displayRows.map((row) => {
               const isEditing = editingId === row.Wed_id;
+              const extraRowClass = rowClassName?.(row);
               return (
-                <tr key={row.Wed_id} data-row-id={row.Wed_id}>
+                <tr
+                  key={row.Wed_id}
+                  data-row-id={row.Wed_id}
+                  className={extraRowClass}
+                >
+                  {hasLeading ? (
+                    <td className="data-table-leading">
+                      {leadingControl(row)}
+                    </td>
+                  ) : null}
                   {columns.map((col) => {
                     const cellKey = String(col.key);
                     // `data-label`은 모바일 카드 레이아웃에서 각 값 앞에 컬럼명을
@@ -395,34 +430,44 @@ export function DataTable<T extends { Wed_id: string }>(
         </tbody>
       </table>
 
-      {pendingDeleteId !== null ? (
-        <div
-          className="confirm-dialog"
-          role="dialog"
-          aria-modal="true"
-          aria-label="삭제 확인"
-        >
-          <div className="confirm-dialog-card">
-            <p className="confirm-dialog-message">정말 삭제하시겠습니까?</p>
-            <div className="confirm-dialog-actions">
-              <PillButton
-                variant="primary"
-                onClick={confirmDelete}
-                disabled={isDeleting}
-              >
-                확인
-              </PillButton>
-              <PillButton
-                variant="secondary"
-                onClick={cancelDelete}
-                disabled={isDeleting}
-              >
-                취소
-              </PillButton>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {/*
+        확인 대화상자는 `document.body`로 포털한다. 이 표는 `transform`(카드 hover
+        리프트)이나 `container-type`(여행준비 카드의 컨테이너 쿼리)을 가진 조상
+        아래에 놓일 수 있는데, 두 속성 모두 `position: fixed` 자손의 컨테이닝
+        블록을 만들어 오버레이가 뷰포트가 아닌 조상 박스를 기준으로 잡히게 한다.
+        포털로 트리 밖에 렌더해 그 영향을 원천 차단한다.
+      */}
+      {pendingDeleteId !== null
+        ? createPortal(
+            <div
+              className="confirm-dialog"
+              role="dialog"
+              aria-modal="true"
+              aria-label="삭제 확인"
+            >
+              <div className="confirm-dialog-card">
+                <p className="confirm-dialog-message">정말 삭제하시겠습니까?</p>
+                <div className="confirm-dialog-actions">
+                  <PillButton
+                    variant="primary"
+                    onClick={confirmDelete}
+                    disabled={isDeleting}
+                  >
+                    확인
+                  </PillButton>
+                  <PillButton
+                    variant="secondary"
+                    onClick={cancelDelete}
+                    disabled={isDeleting}
+                  >
+                    취소
+                  </PillButton>
+                </div>
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
     </div>
   );
 }

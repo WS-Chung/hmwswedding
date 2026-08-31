@@ -75,7 +75,7 @@ export function BudgetAuthGate({ children }: BudgetAuthGateProps) {
   };
 
   return (
-    <PageShell title="예산관리">
+    <PageShell title="예산관리" number="03" eyebrow="Budget">
       <form
         className="budget-auth-gate"
         onSubmit={handleSubmit}

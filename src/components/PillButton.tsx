@@ -9,8 +9,11 @@ import type { ButtonHTMLAttributes } from 'react';
  * either the `.pill-primary` (Action Blue fill) or `.pill-secondary`
  * (outlined) preset defined in src/styles/global.css.
  *
- * Requirement 10.5 (pill 반경): both variants receive `border-radius:
- * var(--rounded-pill)` (9999px) via the shared CSS classes.
+ * DA_WEBUI_KIT.md §7.16 버튼 위계 매핑:
+ *   - `variant="primary"`   → L1 Primary   (`.pill-primary`, bg brand-600 + shadow-glow)
+ *   - `variant="secondary"` → L2 Emphasized (`.pill-secondary`, bg brand-50 + ring brand-500/40)
+ * 두 변형 모두 `border-radius: var(--radius-pill)`(9999px) 캡슐 형태다.
+ * 위계 룰: 한 화면에서 L1은 1개, L2는 1~2개를 권장한다.
  *
  * Defaults:
  *  - `variant` defaults to 'primary'.

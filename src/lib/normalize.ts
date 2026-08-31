@@ -389,6 +389,8 @@ export function normalizeContact(
 
 /** Raw form input for the TravelPage add/edit row. */
 export type TravelFormInput = {
+  /** 가방(카드) 식별자 — `features/travel/bags.ts`의 BagKey 문자열. */
+  Wed_bag?: string;
   Wed_item?: string;
   /** Numeric text ("120000") — parsed to a non-negative integer or `null`. */
   Wed_amount?: string;
@@ -398,6 +400,7 @@ export type TravelFormInput = {
 
 /** Normalized payload ready for `travelApi.create` / `travelApi.update`. */
 export type NormalizedTravel = {
+  Wed_bag: string;
   Wed_item: string;
   Wed_amount: number | null;
   Wed_link: string | null;
@@ -407,20 +410,26 @@ export type NormalizedTravel = {
 /**
  * Normalize a TravelPage row submission for `Wed_Travel`.
  *
- * Required: `Wed_item` (항목).
+ * Required: `Wed_bag` (가방 구분 — 어떤 카드에 담기는지), `Wed_item` (항목).
  * Optional: `Wed_amount`, `Wed_link`, `Wed_note` — empty/whitespace inputs
  * become `null`. `Wed_amount`, when provided, must parse to a non-negative
  * integer via `isValidAmount`.
+ *
+ * `Wed_bag`은 사용자가 직접 입력하는 값이 아니라 "어느 카드의 추가 버튼을
+ * 눌렀는지"에서 결정되므로, 비어 있다면 폼 조립 자체가 잘못된 것이다. 따라서
+ * 사용자 문구 대신 개발 실수를 드러내는 검증 메시지를 반환한다.
  */
 export function normalizeTravel(
   input: TravelFormInput,
 ): NormalizeResult<NormalizedTravel> {
+  const bag = readField(input.Wed_bag);
   const item = readField(input.Wed_item);
   const amountRaw = readField(input.Wed_amount);
   const link = readField(input.Wed_link);
   const note = readField(input.Wed_note);
 
   const errors: string[] = [];
+  if (!isPresent(bag)) errors.push('가방 구분이 지정되지 않았습니다');
   if (!isPresent(item)) errors.push('항목을 입력해주세요');
 
   let amount: number | null = null;
@@ -440,6 +449,7 @@ export function normalizeTravel(
   return {
     ok: true,
     value: {
+      Wed_bag: bag,
       Wed_item: item,
       Wed_amount: amount,
       Wed_link: emptyToNull(link),

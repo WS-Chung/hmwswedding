@@ -105,7 +105,13 @@ export function SchedulePage() {
   );
 
   return (
-    <PageShell title="일정" className="page-wide">
+    <PageShell
+      title="일정"
+      number="01"
+      eyebrow="Schedule"
+      description="달력에서 날짜를 선택하면 그 날의 일정이 왼쪽에 표시됩니다."
+      className="page-wide"
+    >
       {errorMsg && <InlineError>{errorMsg}</InlineError>}
 
       <div className="schedule-layout">

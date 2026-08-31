@@ -1,19 +1,24 @@
 /*
- * Global reset and body defaults for Wedding Planner.
+ * Global styles — DrimAES Light Web UI Kit v1.0 (DA_WEBUI_KIT.md)
  *
- * Depends on tokens defined in ./tokens.css — that file MUST be imported
- * before this one in src/main.tsx so the CSS custom properties resolve.
+ * 토큰은 ./tokens.css 에 정의되어 있으며 main.tsx 에서 이 파일보다 먼저
+ * import 된다.
  *
- * Requirements covered:
- *  - 10.1 body inherits the SF Pro Text / system-ui font stack via --font-text
- *  - 10.3 body background uses --canvas (#ffffff) with parchment (#f5f5f7)
- *         available on containers via .surface-parchment
- *  - 10.4 body text color is --ink (#1d1d1f)
+ * 킷 이식 원칙
+ *  - 킷은 Next.js + Tailwind를 전제하지만 본 프로젝트는 Vite + 순수 CSS다.
+ *    따라서 Tailwind 유틸리티 조합(§6.2 사이드바, §7.3 globals, §7.8 Card,
+ *    §7.12 DataTable, §7.13 Kpi, §7.16 버튼 위계)을 동일한 시각 결과를 내는
+ *    클래스 규칙으로 옮겼다. 클래스 이름은 기존 컴포넌트 계약을 유지한다.
+ *  - 캔버스는 플랫한 #F4F5F7, 콘텐츠는 흰 페이퍼 카드(.paper) 위에만 올린다.
+ *  - 색상은 회사 8색 + 구조 중립색만 사용한다. amber/rose 등 의미색은 없다.
+ *    오류·경고는 navy 솔리드(emphasis) + Bold로 표현한다(킷 §4.5).
+ *  - 그림자 알파는 흑색 0.08 / 네이비 0.16을 넘기지 않는다(킷 §4.6).
+ *  - .gradient-text 는 Hero 한도(페이지 1회·문서 3회) 내에서만 쓴다.
  */
 
-/* -----------------------------------------------------------------
- * Minimal reset — box-sizing, margin/padding zero, media block level
- * ----------------------------------------------------------------- */
+/* =================================================================
+ * Reset
+ * ================================================================= */
 
 *,
 *::before,
@@ -53,27 +58,27 @@ textarea {
   color: inherit;
 }
 
-/* -----------------------------------------------------------------
- * Root layout — full viewport with system-driven text rendering.
- * ----------------------------------------------------------------- */
+/* =================================================================
+ * Base — 플랫 라이트 캔버스 (킷 §2 · §7.3)
+ * ================================================================= */
 
 html {
   -webkit-text-size-adjust: 100%;
   -moz-text-size-adjust: 100%;
   text-size-adjust: 100%;
   height: 100%;
+  scroll-behavior: smooth;
 }
 
 body {
   min-height: 100%;
-  font-family: var(--font-text);
-  font-size:   var(--font-body-size);
-  font-weight: var(--font-body-weight);
-  line-height: var(--font-body-line-height);
-  letter-spacing: var(--font-body-letter-spacing);
-  color: var(--ink);            /* Requirement 10.4 */
-  background: var(--canvas);    /* Requirement 10.3 */
-
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  font-weight: 400;
+  line-height: var(--lh-relaxed);
+  font-feature-settings: "tnum" 1, "ss01" 1;
+  color: #111111;
+  background-color: var(--canvas); /* 메쉬·글로우 없음 */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
@@ -83,417 +88,135 @@ body {
   min-height: 100vh;
 }
 
-/* -----------------------------------------------------------------
- * Headings default to the SF Pro Display stack; component styles
- * later override with specific typography tokens as needed.
- * ----------------------------------------------------------------- */
-
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-display);
-  color: var(--ink);
+  font-family: var(--font-sans);
+  color: var(--text-title);
+  letter-spacing: var(--ls-tight);
 }
 
-/* -----------------------------------------------------------------
- * Links — quiet Action Blue by default, no underline until hover.
- * ----------------------------------------------------------------- */
+p {
+  color: var(--text-body);
+}
+
+/* 스크롤바 (킷 §7.3) */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(85, 85, 85, 0.22);
+  border-radius: var(--radius-pill);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(85, 85, 85, 0.34);
+}
+
+/* =================================================================
+ * Links — 텍스트 액센트는 brand-600 (§4.3)
+ * ================================================================= */
 
 a {
-  color: var(--primary);
+  color: var(--brand-600);
   text-decoration: none;
+  font-weight: 500;
+  transition: color 0.15s var(--ease-kit);
 }
 
 a:hover {
+  color: var(--brand-700);
   text-decoration: underline;
 }
 
 a:focus-visible {
-  outline: 2px solid var(--primary-focus);
+  outline: 2px solid var(--brand-500);
   outline-offset: 2px;
-  border-radius: var(--rounded-xs);
+  border-radius: var(--radius-sm);
 }
 
-/* -----------------------------------------------------------------
- * Surface helpers — used by PageShell and section containers.
- * ----------------------------------------------------------------- */
+/* =================================================================
+ * Utilities — 킷 §7.3 의 .paper / .gradient-text / .tag / .sowhat 등
+ * ================================================================= */
 
-.surface-parchment {
-  background: var(--canvas-parchment);
+/* 다크 키트의 .glass 대응 — 라이트 페이퍼 카드 */
+.paper {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
 }
 
-.surface-canvas {
-  background: var(--canvas);
+.gradient-text {
+  background: var(--gradient-hero);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-/* -----------------------------------------------------------------
- * Pill buttons — used by <PillButton>.
- *
- * design.md § "UI/디자인 시스템 매핑" defines both variants; the classes
- * live here (not in a component-scoped stylesheet) so the design task can
- * validate computed styles via a global CSS render.
- *
- * Requirement 10.5: primary CTA border-radius is --rounded-pill = 9999px.
- * Requirement 10.2: primary background is --primary = #0066cc.
- * ----------------------------------------------------------------- */
-
-.pill-primary {
-  background: var(--primary);
-  color: var(--on-primary);
-  border: 0;
-  border-radius: var(--rounded-pill);
-  padding: 11px 22px;
-  font-family: var(--font-text);
-  font-size: 17px;
-  line-height: 1.24;
-  letter-spacing: -0.374px;
-  cursor: pointer;
-  transition: transform 0.08s ease, opacity 0.15s ease;
+.dot-bg {
+  background-image: radial-gradient(rgba(85, 85, 85, 0.07) 1px, transparent 1px);
+  background-size: 18px 18px;
 }
 
-.pill-primary:hover:not(:disabled) {
-  opacity: 0.92;
+/* 표·차트 아래 한 줄 결론 (PPT So-What 바 이식) */
+.sowhat {
+  border-radius: var(--radius-md);
+  background: var(--brand-600);
+  color: var(--text-on-brand);
+  font-weight: 700;
+  font-size: var(--fs-sowhat);
+  line-height: 1.5;
+  padding: 10px 16px;
 }
 
-.pill-primary:focus-visible {
-  outline: 2px solid var(--primary-focus);
-  outline-offset: 2px;
-}
-
-.pill-primary:active:not(:disabled) {
-  transform: scale(0.95);
-}
-
-.pill-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.pill-secondary {
-  background: transparent;
-  color: var(--primary);
-  border: 1px solid var(--primary);
-  border-radius: var(--rounded-pill);
-  padding: 11px 22px;
-  font-family: var(--font-text);
-  font-size: 17px;
-  line-height: 1.24;
-  letter-spacing: -0.374px;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-}
-
-.pill-secondary:hover:not(:disabled) {
-  background: rgba(0, 102, 204, 0.06);
-}
-
-.pill-secondary:focus-visible {
-  outline: 2px solid var(--primary-focus);
-  outline-offset: 2px;
-}
-
-.pill-secondary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* -----------------------------------------------------------------
- * Form fields — used by <TextField>, <NumberField>, <DateField>,
- * <TimeField>.
- *
- * `.field` is a vertical stack (label · input · optional inline error).
- * The input reuses `--rounded-md` (11px) per design.md §
- * "공통 컴포넌트" and adopts `--primary-focus` for the focus ring so
- * keyboard focus remains visible on every surface.
- * ----------------------------------------------------------------- */
-
-.field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xxs);
-  margin-bottom: var(--space-sm);
-}
-
-.field-label {
-  font-family: var(--font-text);
-  font-size: var(--font-caption-strong-size);
-  font-weight: var(--font-caption-strong-weight);
-  line-height: var(--font-caption-strong-line-height);
-  letter-spacing: var(--font-caption-strong-letter-spacing);
-  color: var(--ink);
-}
-
-.field-input {
-  font-family: var(--font-text);
-  font-size: var(--font-body-size);
-  line-height: var(--font-body-line-height);
-  color: var(--ink);
-  background: var(--canvas);
-  border: 1px solid var(--hairline);
-  border-radius: var(--rounded-md);
-  padding: 10px 12px;
-  min-height: 40px;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
-}
-
-/* multiline TextField(<textarea>)는 세로 리사이즈만 허용하고 줄바꿈을 보존한다. */
-textarea.field-input {
-  resize: vertical;
-  min-height: 96px;
-  line-height: var(--font-body-line-height);
-  white-space: pre-wrap;
-}
-
-.field-input:hover:not(:disabled) {
-  border-color: var(--ink-muted-48);
-}
-
-.field-input:focus-visible {
-  outline: none;
-  border-color: var(--primary-focus);
-  box-shadow: 0 0 0 2px var(--primary-focus);
-}
-
-.field-input:disabled {
-  background: var(--surface-pearl);
-  color: var(--ink-muted-48);
-  cursor: not-allowed;
-}
-
-/*
- * 금액 등 숫자 입력에서 브라우저 기본 스핀 버튼(위/아래 화살표)을 제거한다.
- * NumberField는 type="text"로 전환했지만, 잔여 type="number" 입력이 있어도
- * 화살표가 나타나지 않도록 전역 안전장치를 둔다(사용자 요구: 직접 입력만 허용).
- */
-input[type='number']::-webkit-outer-spin-button,
-input[type='number']::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-input[type='number'] {
-  -moz-appearance: textfield;
-  appearance: textfield;
-}
-
-.field-input[aria-invalid="true"] {
-  border-color: #c0392b;
-}
-
-.field-input[aria-invalid="true"]:focus-visible {
-  box-shadow: 0 0 0 2px rgba(192, 57, 43, 0.5);
-}
-
-/* -----------------------------------------------------------------
- * Inline error — used by <InlineError>.
- *
- * Caption-sized copy in an error-tone red. The component takes care of
- * `role="alert"` for assistive tech.
- * ----------------------------------------------------------------- */
-
-.inline-error {
-  font-family: var(--font-text);
-  font-size: var(--font-caption-size);
-  line-height: var(--font-caption-line-height);
-  letter-spacing: var(--font-caption-letter-spacing);
-  color: #c0392b;
-}
-
-/* -----------------------------------------------------------------
- * Page shell — used by <PageShell>.
- *
- * design.md § "UI/디자인 시스템 매핑" defines the section rhythm: every
- * feature page renders inside a `.page` container that supplies 80px
- * top/bottom breathing room (--space-section) and 48px horizontal
- * gutters (--space-xxl). Content is centered within a 1200px max-width
- * column so wide screens still feel calm and Apple-quiet.
- *
- * Requirement 10.6: `.page` applies `padding: var(--space-section) …`.
- * ----------------------------------------------------------------- */
-
-.page {
-  padding: var(--space-section) var(--space-xxl);
-  max-width: 1600px;
-  margin: 0 auto;
-}
-
-/*
- * .page-wide — 일정 페이지처럼 가로 공간을 최대로 활용해야 하는 화면.
- * max-width 제한을 없애 사이드바(240px) + 메인 영역이 뷰포트 전체를 채운다
- * (1920 기준 사이드바 포함 90% 이상 · 사용자 요구 1·4).
- */
-.page-wide {
-  max-width: none;
-}
-
-.page-header {
-  display: flex;
-  flex-direction: row;
+.tag {
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-md);
-  margin-bottom: var(--space-xl);
-}
-
-.page-title {
-  font-family: var(--font-display-md-family);
-  font-size: var(--font-display-md-size);
-  font-weight: var(--font-display-md-weight);
-  line-height: var(--font-display-md-line-height);
-  letter-spacing: var(--font-display-md-letter-spacing);
-  color: var(--ink);
-}
-
-.page-toolbar {
-  margin-left: auto;
-  display: flex;
-  gap: var(--space-sm);
-}
-
-.page-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xl);
-}
-
-/* -----------------------------------------------------------------
- * DataTable — used by <DataTable> (task 8.3).
- *
- * A minimal grid with hairline borders, right-aligned toolbar,
- * per-row inline edit + delete controls, and a modal confirm dialog
- * for destructive actions. All colors resolve to design tokens so no
- * bespoke hues leak into the component.
- * ----------------------------------------------------------------- */
-
-.data-table-wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  width: 100%;
-}
-
-.data-table-toolbar {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-xs);
-}
-
-.data-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--font-text);
-  font-size: var(--font-body-size);
-  color: var(--ink);
-  background: var(--canvas);
-}
-
-.data-table th,
-.data-table td {
-  border-bottom: 1px solid var(--hairline);
-  padding: 10px 12px;
-  text-align: left;
-  vertical-align: middle;
-}
-
-.data-table th {
-  font-weight: var(--font-caption-strong-weight);
-  font-size: var(--font-caption-strong-size);
-  line-height: var(--font-caption-strong-line-height);
-  letter-spacing: var(--font-caption-strong-letter-spacing);
-  color: var(--ink-muted-80);
-  background: var(--surface-pearl);
-}
-
-.data-table-actions-header,
-.data-table-actions {
-  text-align: right;
-  /*
-   * 고정 폭(백분율 아님)으로 두어야 width:100% auto 테이블에서 액션 컬럼이
-   * 테이블 우측 끝까지 확장된다. `width: 1%`(백분율)를 쓰면 남는 폭이 우측에
-   * 미분배로 남아 버튼이 오른쪽 끝보다 안쪽에 놓였다. 편집 모드의 저장/취소
-   * 버튼이 더 넓으면 auto 레이아웃이 이 값을 최소폭으로 보고 확장한다.
-   */
-  width: 104px;
+  gap: 0.35rem;
+  padding: 3px 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--fs-tag);
+  font-weight: 500;
+  line-height: 1.5;
   white-space: nowrap;
+  background: rgba(27, 187, 204, 0.1);
+  color: var(--brand-700);
+  border: 1px solid rgba(27, 187, 204, 0.35);
 }
 
-/*
- * 수정/삭제 버튼을 액션 컬럼의 오른쪽 끝에 완전히 밀착시킨다. 셀 기본
- * 오른쪽 패딩(12px)이 버튼을 살짝 안쪽으로 당기던 것을 제거한다.
- * (`.data-table td` 보다 높은 specificity로 padding-right만 덮어쓴다.)
- */
-.data-table th.data-table-actions-header,
-.data-table td.data-table-actions {
-  padding-right: 0;
+.tag-muted {
+  background: var(--surface-50);
+  color: var(--text-body);
+  border-color: var(--border);
 }
 
-/*
- * 액션 셀은 table-cell 상태를 유지한다. `display: flex`를 주면 셀이 더 이상
- * 행 높이만큼 늘어나지 않고(내용 높이만 차지) 구분선(border-bottom)이 다른
- * 셀과 어긋나며 버튼이 상단에 붙는다. table-cell + `vertical-align: middle`
- * (base `.data-table td`에 지정됨)로 두면 버튼이 행의 정확한 중앙 높이에 오고
- * 구분선도 다른 셀과 정렬된다. 버튼은 인라인으로 우측(text-align:right)에 배치.
- */
-.data-table-actions > * {
-  vertical-align: middle;
+.tag-navy {
+  background: var(--navy-tint-08);
+  color: var(--brand-600);
+  border-color: var(--brand-ring-25);
 }
 
-.data-table-actions > * + * {
-  margin-left: var(--space-xs);
+/* 완료(전부 챔김) 표시 — 킷 §4.4: 흰 바탕의 success는 emerald-600/700 + 틴트 100 */
+.tag-done {
+  background: var(--emerald-100);
+  color: var(--emerald-700);
+  border-color: var(--emerald-500);
 }
 
-.data-table-empty {
-  text-align: center;
-  color: var(--ink-muted-48);
-  padding: var(--space-lg) var(--space-md);
-}
-
-.data-table-edit-input {
-  width: 100%;
-  min-width: 0;
-}
-
-/* 여러 줄 텍스트(코멘트 등)를 표에서 줄바꿈 그대로 표시한다. */
-.cell-multiline {
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-/*
- * 인라인 편집 셀 안에서 <NumberField> 등 `.field` 래퍼를 쓰는 경우, 셀 높이가
- * 늘어나지 않도록 여백을 제거하고 입력을 셀 폭에 맞춘다.
- */
-.data-table td .field {
-  margin-bottom: 0;
-  gap: 0;
-}
-
-.data-table td .field-input {
-  width: 100%;
-}
-
-.data-table-icon-button {
-  background: transparent;
-  border: 1px solid var(--hairline);
-  color: var(--ink);
-  border-radius: var(--rounded-sm);
-  padding: 6px 10px;
-  cursor: pointer;
-  font-size: var(--font-caption-size);
-  line-height: 1;
-  transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-
-.data-table-icon-button:hover:not(:disabled) {
-  background: var(--surface-pearl);
-  border-color: var(--ink-muted-48);
-}
-
-.data-table-icon-button:focus-visible {
-  outline: 2px solid var(--primary-focus);
-  outline-offset: 2px;
-}
-
-.data-table-icon-button:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+.code-block {
+  background: var(--surface-50);
+  border: 1px solid var(--border);
+  color: var(--text-code);
+  border-radius: var(--radius-lg);
+  padding: 1rem 1.1rem;
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  line-height: var(--lh-relaxed);
+  overflow-x: auto;
 }
 
 .visually-hidden {
@@ -508,42 +231,781 @@ input[type='number'] {
   border: 0;
 }
 
-/* -----------------------------------------------------------------
- * Confirm dialog — reused for row deletion in <DataTable> and any
- * other single-message confirmation prompts.
- * ----------------------------------------------------------------- */
+.surface-parchment {
+  background: var(--surface-100);
+}
 
-.confirm-dialog {
+.surface-canvas {
+  background: var(--surface-0);
+}
+
+/* =================================================================
+ * Buttons — 킷 §7.16 3단계 위계
+ *   L1 Primary   : .pill-primary   (bg brand-600 · shadow-glow)
+ *   L2 Emphasized: .pill-secondary (bg brand-50 · ring brand-500/40)
+ *   L3 Ghost     : .data-table-icon-button 등 아이콘/보조 컨트롤
+ * ================================================================= */
+
+.pill-primary,
+.pill-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xxs);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  font-weight: 600;
+  line-height: 1.2;
+  border-radius: var(--radius-pill);
+  padding: 9px 20px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color 0.15s var(--ease-kit),
+    box-shadow 0.15s var(--ease-kit),
+    transform 0.15s var(--ease-kit),
+    color 0.15s var(--ease-kit);
+}
+
+/* --- L1 --- */
+.pill-primary {
+  background: var(--brand-600);
+  color: var(--text-on-brand);
+  border: 1px solid transparent;
+  box-shadow: var(--shadow-glow);
+}
+
+.pill-primary:hover:not(:disabled) {
+  background: var(--brand-700);
+  transform: translateY(-1px);
+}
+
+.pill-primary:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* --- L2 --- */
+.pill-secondary {
+  background: var(--brand-50);
+  color: var(--brand-700);
+  border: 1px solid transparent;
+  box-shadow:
+    0 0 0 2px var(--brand-ring-40),
+    var(--shadow-card);
+}
+
+.pill-secondary:hover:not(:disabled) {
+  background: var(--brand-100);
+  box-shadow:
+    0 0 0 2px var(--brand-ring-70),
+    var(--shadow-card);
+  transform: translateY(-1px);
+}
+
+.pill-secondary:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+.pill-primary:focus-visible,
+.pill-secondary:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+}
+
+.pill-primary:disabled,
+.pill-secondary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* =================================================================
+ * Form fields — 흰 입력면 + #DEDEDE 보더 + navy 포커스 링
+ * ================================================================= */
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+  margin-bottom: var(--space-sm);
+}
+
+.field-label {
+  font-family: var(--font-sans);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-body);
+}
+
+.field-input {
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: 1.45;
+  color: var(--text-title);
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 9px 12px;
+  min-height: 38px;
+  transition:
+    border-color 0.15s var(--ease-kit),
+    box-shadow 0.15s var(--ease-kit);
+}
+
+.field-input::placeholder {
+  color: var(--text-meta);
+}
+
+textarea.field-input {
+  resize: vertical;
+  min-height: 92px;
+  line-height: var(--lh-relaxed);
+  white-space: pre-wrap;
+}
+
+select.field-input {
+  cursor: pointer;
+}
+
+.field-input:hover:not(:disabled) {
+  border-color: var(--brand-ring-40);
+}
+
+.field-input:focus-visible,
+.field-input:focus {
+  outline: none;
+  border-color: var(--brand-600);
+  box-shadow: 0 0 0 3px var(--navy-tint-16);
+}
+
+.field-input:disabled {
+  background: var(--surface-50);
+  color: var(--text-meta);
+  cursor: not-allowed;
+}
+
+/* 숫자 입력의 브라우저 기본 스핀 버튼 제거(직접 입력만 허용). */
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+/*
+ * 유효하지 않은 입력: 킷 §4.5에 따라 rose 계열을 쓰지 않고 navy 강조로
+ * 표시한다(보더 brand-600 + 네이비 링).
+ */
+.field-input[aria-invalid="true"] {
+  border-color: var(--brand-600);
+  box-shadow: 0 0 0 2px var(--navy-tint-16);
+}
+
+.field-input[aria-invalid="true"]:focus-visible {
+  box-shadow: 0 0 0 3px var(--navy-tint-16);
+}
+
+/* =================================================================
+ * InlineError — Callout `emphasis` (navy 솔리드 + Bold)
+ *
+ * 킷 §4.5: 경고·오류 뉘앙스에 amber/rose를 쓰지 않고 네이비 솔리드 패널로
+ * 처리한다. §7.9 Callout emphasis 스타일을 그대로 적용한다.
+ * ================================================================= */
+
+.inline-error {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-xs);
+  background: var(--brand-600);
+  color: var(--text-on-brand);
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 10px 14px;
+  font-size: var(--fs-card-body);
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.inline-error::before {
+  content: "◆";
+  opacity: 0.8;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+/* =================================================================
+ * App shell — 사이드바 오프셋 (킷 §9)
+ * ================================================================= */
+
+.app-main {
+  margin-left: var(--sidebar-width);
+  min-height: 100vh;
+}
+
+/* =================================================================
+ * Sidebar — 킷 §6.2 라이트 표준
+ * ================================================================= */
+
+.side-navigation {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--sidebar-width);
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-right: 1px solid var(--border);
+  padding: var(--space-lg) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  overflow-y: auto;
+  z-index: 40;
+  transition: transform 0.2s var(--ease-kit);
+}
+
+/* 로고 블록 — 36×36 라운드 12px navy→cyan 그라디언트 마크 + 타이틀 */
+.side-nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 var(--space-xs);
+}
+
+.side-nav-mark {
+  position: relative;
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: var(--gradient-mark);
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1), var(--shadow-glow);
+}
+
+.side-nav-brand-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.side-nav-title {
+  font-family: var(--font-sans);
+  font-size: var(--fs-card-title);
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: var(--ls-tight);
+  color: var(--text-title);
+}
+
+.side-nav-subtitle {
+  font-size: 11.5px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: var(--ls-wider);
+  color: var(--brand-600);
+}
+
+.side-nav-group-label {
+  padding: 0 var(--space-xs);
+  margin-bottom: 6px;
+  font-size: var(--fs-group-label);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-eyebrow);
+  color: var(--text-meta);
+}
+
+.side-nav-links {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.side-nav-link {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  text-decoration: none;
+  color: var(--text-body);
+  background: transparent;
+  padding: 10px var(--space-sm);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-size: var(--fs-nav);
+  font-weight: 500;
+  line-height: 1.25;
+  box-shadow: none;
+  transition:
+    background-color 0.15s var(--ease-kit),
+    color 0.15s var(--ease-kit),
+    box-shadow 0.15s var(--ease-kit);
+}
+
+.side-nav-link:hover {
+  background: var(--surface-200);
+  color: var(--text-title);
+  text-decoration: none;
+}
+
+.side-nav-link:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+}
+
+/* 번호 prefix — 12px mono, 활성 시 brand-600 */
+.side-nav-num {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: var(--fs-nav-num);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--text-meta);
+  transition: color 0.15s var(--ease-kit);
+}
+
+.side-nav-link:hover .side-nav-num {
+  color: var(--text-body);
+}
+
+/* 활성 항목: brand-50 그라디언트 + ring + 좌측 navy 막대 + 우측 cyan 도트 */
+.side-nav-link.active {
+  background: linear-gradient(
+    to right,
+    var(--brand-50) 0%,
+    rgba(229, 240, 245, 0.5) 50%,
+    transparent 100%
+  );
+  color: var(--brand-800);
+  font-weight: 600;
+  box-shadow: 0 0 0 1px var(--brand-ring-25);
+}
+
+.side-nav-link.active .side-nav-num {
+  color: var(--brand-600);
+}
+
+.side-nav-link.active::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 24px;
+  border-radius: 0 var(--radius-pill) var(--radius-pill) 0;
+  background: var(--brand-600);
+  box-shadow: 0 0 10px 2px var(--cyan-glow);
+}
+
+.side-nav-link.active::after {
+  content: "";
+  position: absolute;
+  right: var(--space-sm);
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-pill);
+  background: var(--brand-400);
+  box-shadow: 0 0 8px 2px var(--cyan-glow);
+}
+
+/* 모바일 토글 — 킷 §6.2: 우하단 고정 navy pill. 데스크탑에서는 숨김. */
+.nav-hamburger,
+.nav-overlay {
+  display: none;
+}
+
+/* =================================================================
+ * PageShell — 킷 §7.7 SlideShell 대응
+ * ================================================================= */
+
+.page {
+  max-width: var(--content-max);
+  margin: 0 auto;
+  padding: 40px var(--space-lg) var(--space-section);
+  animation: slideEnter 0.4s var(--ease-kit);
+}
+
+/* 가로 공간을 최대로 쓰는 화면(일정 등)은 max-width 제한을 해제한다. */
+.page-wide {
+  max-width: none;
+}
+
+.page-header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.page-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+/* eyebrow — 12px uppercase tracking 0.18em brand-600 */
+.page-eyebrow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-eyebrow);
+  color: var(--brand-600);
+}
+
+.page-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 22px;
+  min-width: 26px;
+  padding: 0 7px;
+  border-radius: var(--radius-sm);
+  background: var(--brand-50);
+  box-shadow: 0 0 0 1px var(--brand-ring-25);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--brand-700);
+}
+
+.page-title {
+  font-family: var(--font-sans);
+  font-size: var(--fs-title);
+  font-weight: var(--fw-title);
+  line-height: 1.2;
+  letter-spacing: var(--ls-tight);
+  color: var(--text-title);
+}
+
+.page-description {
+  font-size: var(--fs-desc);
+  line-height: var(--lh-relaxed);
+  color: var(--text-body);
+}
+
+.page-toolbar {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.page-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+/* =================================================================
+ * DataTable — 킷 §7.12 (#DEDEDE thead + zebra + hover brand-50/60)
+ * ================================================================= */
+
+.data-table-wrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow-x: auto;
+}
+
+.data-table-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--border);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+  font-size: var(--fs-table);
+  line-height: 1.5;
+  color: var(--text-body);
+  background: transparent;
+}
+
+.data-table th,
+.data-table td {
+  padding: 10px 14px;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.data-table thead th {
+  background: var(--co-light);
+  color: var(--text-title);
+  font-size: var(--fs-thead);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-wider);
+  white-space: nowrap;
+}
+
+.data-table thead tr th:first-child {
+  border-top-left-radius: 11px;
+}
+
+.data-table thead tr th:last-child {
+  border-top-right-radius: 11px;
+}
+
+.data-table tbody tr {
+  border-bottom: 1px solid var(--border-soft);
+  transition: background-color 0.15s var(--ease-kit);
+}
+
+.data-table tbody tr:last-child {
+  border-bottom: 0;
+}
+
+.data-table tbody tr:nth-child(even) {
+  background: var(--surface-50);
+}
+
+.data-table tbody tr:hover {
+  background: var(--brand-tint-60);
+}
+
+/*
+ * 1열은 co-black medium (킷 §7.12). 선행 컨트롤 컬럼(체크박스)이 있는 표에서는
+ * 그 다음 셀이 실질적인 1열이므로 함께 지정한다.
+ */
+.data-table tbody td:first-child,
+.data-table tbody td.data-table-leading + td {
+  color: var(--text-title);
+  font-weight: 500;
+}
+
+.data-table-actions-header,
+.data-table-actions {
+  text-align: right;
+  width: 96px;
+  white-space: nowrap;
+}
+
+/* --- 선행 컨트롤 컬럼 (챔김 체크박스) --- */
+
+.data-table-leading-col {
+  width: 40px;
+}
+
+.data-table th.data-table-leading,
+.data-table td.data-table-leading {
+  width: 40px;
+  padding-right: 0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+.pack-checkbox {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  vertical-align: middle;
+  accent-color: var(--brand-600);
+  cursor: pointer;
+}
+
+.pack-checkbox:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+}
+
+/*
+ * 챔김 완료 행: 체크박스·액션 셀을 제외한 모든 셀에 취소선을 긋고 색을 낮춰
+ * 소거된 항목임을 표시한다. `text-decoration`은 자손으로 전파되므로 셀 안의
+ * 링크·다중행 텍스트에도 함께 적용된다.
+ */
+.data-table tbody tr.row-packed td:not(.data-table-leading):not(.data-table-actions) {
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: var(--brand-500);
+  color: var(--text-meta);
+}
+
+.data-table tbody tr.row-packed td:not(.data-table-leading):not(.data-table-actions) a {
+  color: var(--text-meta);
+}
+
+.data-table tbody tr.row-packed {
+  background: var(--surface-50);
+}
+
+.data-table-actions > * {
+  vertical-align: middle;
+}
+
+.data-table-actions > * + * {
+  margin-left: 6px;
+}
+
+.data-table-empty {
+  text-align: center;
+  color: var(--text-meta);
+  padding: var(--space-lg) var(--space-md);
+  font-size: var(--fs-card-body);
+}
+
+.data-table-edit-input {
+  width: 100%;
+  min-width: 0;
+}
+
+.cell-multiline {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* 인라인 편집 셀 안의 `.field` 래퍼는 셀 높이를 늘리지 않는다. */
+.data-table td .field {
+  margin-bottom: 0;
+  gap: 0;
+}
+
+.data-table td .field-input {
+  width: 100%;
+}
+
+/* 헤더 정렬 버튼 */
+.data-table-sort-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: color 0.15s var(--ease-kit);
+}
+
+.data-table-sort-button:hover {
+  color: var(--brand-600);
+}
+
+.data-table-sort-button:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+.data-table-sort-caret {
+  font-size: 9px;
+  color: var(--text-body);
+  line-height: 1;
+}
+
+.data-table-actions-col {
+  width: 96px;
+}
+
+/* L3 Ghost — 아이콘 컨트롤 */
+.data-table-icon-button {
+  background: transparent;
+  border: 1px solid var(--brand-ring-25);
+  color: var(--brand-600);
+  border-radius: var(--radius-md);
+  padding: 5px 9px;
+  cursor: pointer;
+  font-size: var(--fs-caption);
+  line-height: 1.2;
+  transition:
+    background-color 0.15s var(--ease-kit),
+    border-color 0.15s var(--ease-kit),
+    transform 0.15s var(--ease-kit);
+}
+
+.data-table-icon-button:hover:not(:disabled) {
+  background: var(--brand-50);
+  border-color: var(--brand-ring-40);
+  transform: translateY(-1px);
+}
+
+.data-table-icon-button:focus-visible {
+  outline: 2px solid var(--brand-500);
+  outline-offset: 2px;
+}
+
+.data-table-icon-button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+/* =================================================================
+ * Overlays — confirm dialog · modal
+ * ================================================================= */
+
+.confirm-dialog,
+.modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(29, 29, 31, 0.45); /* --ink at ~45% */
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
   padding: var(--space-md);
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
 }
 
-.confirm-dialog-card {
-  background: var(--canvas);
-  border-radius: var(--rounded-lg);
+.confirm-dialog-card,
+.modal-card,
+.category-manager-card {
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-elevated);
   padding: var(--space-lg);
-  min-width: 280px;
-  max-width: 400px;
-  box-shadow: var(--shadow-product);
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  animation: slideEnter 0.22s var(--ease-kit);
+  overflow: hidden;
+}
+
+.confirm-dialog-card {
+  min-width: 280px;
+  max-width: 400px;
 }
 
 .confirm-dialog-message {
-  font-family: var(--font-text);
-  font-size: var(--font-body-strong-size);
-  font-weight: var(--font-body-strong-weight);
-  line-height: var(--font-body-strong-line-height);
-  color: var(--ink);
   margin: 0;
   text-align: center;
+  font-size: var(--fs-card-title);
+  font-weight: 600;
+  line-height: 1.5;
+  color: var(--text-title);
 }
 
 .confirm-dialog-actions {
@@ -552,48 +1014,82 @@ input[type='number'] {
   gap: var(--space-sm);
 }
 
-/* -----------------------------------------------------------------
- * Calendar — used by <CalendarHeader> and <CalendarGrid> (task 8.7).
- *
- * Schedule 페이지 상단의 월 이동 컨트롤(`.calendar-header`)과 7 열 그리드
- * (`.calendar-weekdays` + `.calendar-grid`)를 지원한다. 하이라이트된
- * 셀(`.has-schedule`)은 `--primary` 토큰 배경으로 렌더링하여 Requirement
- * 10.2(액센트 색상 = #0066cc) 및 2.4(일정 등록 날짜 시각 표시)를 동시에 만족.
- *
- * `inMonth: false` 셀(`.day-cell-out`)은 muted ink + 감소된 opacity로 시각
- * 계층을 낮추어 사용자가 대상 월 vs. 인접 월을 즉시 구분할 수 있도록 한다.
- * ----------------------------------------------------------------- */
+.modal-card {
+  min-width: 320px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 85vh;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: var(--space-sm);
+}
+
+.modal-title,
+.category-manager-title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.3;
+  letter-spacing: var(--ls-tight);
+  color: var(--text-title);
+}
+
+.modal-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--border);
+}
+
+/* =================================================================
+ * Calendar — 하이라이트는 navy 솔리드, 선택은 cyan 링
+ * ================================================================= */
 
 .calendar-header {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-md);
-  margin-bottom: var(--space-lg);
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
 }
 
 .calendar-month-label {
-  font-family: var(--font-display-md-family);
-  font-size: var(--font-display-md-size);
-  font-weight: var(--font-display-md-weight);
-  line-height: var(--font-display-md-line-height);
-  letter-spacing: var(--font-display-md-letter-spacing);
-  color: var(--ink);
   margin: 0;
+  font-family: var(--font-sans);
+  font-size: 19px;
+  font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: var(--ls-tight);
+  color: var(--text-title);
+  font-variant-numeric: tabular-nums;
 }
 
 .calendar-weekdays {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: var(--space-xxs);
+  gap: 6px;
   text-align: center;
-  font-family: var(--font-text);
-  font-size: var(--font-caption-size);
-  line-height: var(--font-caption-line-height);
-  letter-spacing: var(--font-caption-letter-spacing);
-  color: var(--ink-muted-48);
-  margin-bottom: var(--space-xs);
+  font-size: var(--fs-group-label);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--ls-eyebrow);
+  color: var(--text-meta);
+  margin-bottom: 6px;
 }
 
 .calendar-weekday {
@@ -603,286 +1099,261 @@ input[type='number'] {
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
-  gap: var(--space-xxs);
+  gap: 6px;
 }
 
 .day-cell {
   aspect-ratio: 1 / 1;
-  padding: var(--space-xs);
-  background: var(--canvas);
-  border: 1px solid var(--hairline);
-  border-radius: var(--rounded-sm);
+  padding: 6px 8px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  text-align: center;
-  font-family: var(--font-text);
-  font-size: var(--font-body-size);
-  line-height: 1.24;
-  letter-spacing: -0.374px;
-  color: var(--ink);
-  transition: background-color 0.15s ease, border-color 0.15s ease;
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+  color: var(--text-body);
   display: flex;
   align-items: flex-start;
   justify-content: flex-end;
+  transition:
+    background-color 0.15s var(--ease-kit),
+    border-color 0.15s var(--ease-kit),
+    transform 0.15s var(--ease-kit),
+    box-shadow 0.15s var(--ease-kit);
 }
 
 .day-cell:hover:not(:disabled) {
-  background: var(--surface-pearl);
+  background: var(--surface-200);
+  border-color: var(--brand-ring-40);
+  transform: translateY(-1px);
 }
 
 .day-cell:focus-visible {
-  outline: 2px solid var(--primary-focus);
+  outline: 2px solid var(--brand-500);
   outline-offset: 2px;
 }
 
 .day-cell-out {
-  color: var(--ink-muted-48);
-  opacity: 0.4;
+  color: var(--text-meta);
+  background: var(--surface-50);
+  opacity: 0.65;
 }
 
 .day-cell.has-schedule {
-  background: var(--primary);
-  color: var(--on-primary);
-  font-weight: 600;
-  border-color: var(--primary);
+  background: var(--brand-600);
+  border-color: var(--brand-600);
+  color: var(--text-on-brand);
+  font-weight: 700;
+  box-shadow: var(--shadow-glow);
 }
 
 .day-cell.has-schedule:hover:not(:disabled) {
-  background: var(--primary);
-  opacity: 0.92;
+  background: var(--brand-700);
+  border-color: var(--brand-700);
 }
 
 .day-cell-selected {
-  outline: 2px solid var(--primary-focus);
-  outline-offset: 2px;
+  outline: 2px solid var(--brand-400);
+  outline-offset: 1px;
+  box-shadow: 0 0 10px 2px var(--cyan-glow-soft);
 }
 
-/* -----------------------------------------------------------------
- * SideNavigation — used by <SideNavigation> (task 9.1).
- *
- * The permanent left rail exposing the four page entry points
- * (일정 / 결정사항 / 예산관리 / 연락처). Fixed to the viewport so it stays
- * put during route changes and body scrolling. Uses --canvas-parchment as
- * background against the white main canvas, separated by a 1px hairline —
- * the same parchment/canvas duality the design tokens define.
- *
- * Active-state visual (Requirement 1.3): the current-route NavLink picks up
- * both `color: var(--primary)` and a 4px primary indicator bar on its left
- * edge via `::before`, giving redundant cues so activity is clear regardless
- * of color perception.
- *
- * Requirements covered:
- *  - 1.1 four fixed menu entries rendered on every page
- *  - 1.3 active menu item visually distinct (color + indicator bar)
- * ----------------------------------------------------------------- */
+/* =================================================================
+ * Schedule 페이지 — 2단 레이아웃
+ * ================================================================= */
 
-.side-navigation {
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 240px;
-  background: var(--canvas-parchment);
-  border-right: 1px solid var(--hairline);
-  padding: var(--space-xl) var(--space-md);
+.schedule-layout {
   display: flex;
-  flex-direction: column;
   gap: var(--space-lg);
-  z-index: 10;
+  align-items: flex-start;
 }
 
-.side-nav-title {
-  font-family: var(--font-display-md-family);
-  font-size: var(--font-display-md-size);
-  font-weight: var(--font-display-md-weight);
-  line-height: var(--font-display-md-line-height);
-  letter-spacing: var(--font-display-md-letter-spacing);
-  color: var(--ink);
-  margin: 0;
+.schedule-calendar {
+  flex: 0 0 26%;
+  min-width: 300px;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-md);
 }
 
-.side-nav-links {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-xs);
-  list-style: none;
-  padding: 0;
-  margin: 0;
+.schedule-detail {
+  flex: 1 1 74%;
+  min-width: 0;
 }
 
-.side-nav-link {
-  display: block;
-  position: relative;
-  text-decoration: none;
-  color: var(--ink);
-  padding: var(--space-sm) var(--space-md);
-  border-radius: var(--rounded-md);
-  font-family: var(--font-caption-strong-family);
-  font-size: var(--font-caption-strong-size);
-  font-weight: var(--font-caption-strong-weight);
-  line-height: var(--font-caption-strong-line-height);
-  letter-spacing: var(--font-caption-strong-letter-spacing);
-  transition: background-color 0.15s ease, color 0.15s ease;
-}
-
-.side-nav-link:hover {
-  background: var(--surface-pearl);
-  text-decoration: none;
-}
-
-.side-nav-link:focus-visible {
-  outline: 2px solid var(--primary-focus);
-  outline-offset: 2px;
-}
-
-.side-nav-link.active {
-  color: var(--primary);
-  font-weight: 600;
-  background: var(--canvas);
-}
-
-.side-nav-link.active::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 8px;
-  bottom: 8px;
-  width: 4px;
-  background: var(--primary);
-  border-radius: var(--rounded-pill);
-}
-
-/* -----------------------------------------------------------------
- * Schedule add form — used by <AddScheduleForm> (task 10.3).
- *
- * A minimal card that hosts the 5-field 일정 추가 form (날짜 · 장소 · 시간
- * · 일정내용 · 메모) plus the 저장 / 취소 action row. Rendered as an inline
- * card inside SchedulePage (not a full-screen modal) so the surrounding
- * calendar remains visible while the user is composing.
- * ----------------------------------------------------------------- */
-
-.schedule-add-form {
-  background: var(--canvas);
-  border: 1px solid var(--hairline);
-  border-radius: var(--rounded-lg);
-  padding: var(--space-lg);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.schedule-add-form-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-sm);
+.schedule-hint {
   margin-top: var(--space-sm);
+  font-size: var(--fs-caption);
+  line-height: 1.5;
+  color: var(--text-meta);
 }
 
-/* -----------------------------------------------------------------
- * BudgetSummary — used by <BudgetSummary> (task 14.2).
- *
- * A 3-column card row rendered at the top of the Budget page displaying
- * 총 예산 · 총 지출 · 잔여 예산. Each cell is a pearl-tinted tile with a
- * caption-strong label above a display-md value so the numbers dominate
- * the composition while the labels remain quietly legible.
- *
- * Requirements covered:
- *  - 7.1 세 값(총 예산, 총 지출, 잔여 예산)이 항상 함께 표시된다.
- *  - 7.7 값은 원 단위 정수 + 세 자리 쉼표 (컴포넌트가 formatKRW로 처리).
- *
- * The row uses `--space-lg` gaps between cells and `--space-xl` bottom
- * margin so the summary breathes against the BudgetItemTable below it,
- * matching the 8px-based rhythm defined in tokens.css.
- * ----------------------------------------------------------------- */
-
-.budget-summary {
-  display: flex;
-  gap: var(--space-lg);
-  margin-bottom: var(--space-xl);
+.day-schedules-panel > h2 {
+  font-family: var(--font-sans);
+  font-size: var(--fs-card-title);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-title);
+  margin-bottom: var(--space-sm);
+  font-variant-numeric: tabular-nums;
 }
 
-.budget-summary-cell {
-  flex: 1;
+.day-schedules-placeholder {
+  color: var(--text-meta);
+  font-size: var(--fs-card-body);
   padding: var(--space-lg);
-  background: var(--surface-pearl);
-  border-radius: var(--rounded-lg);
+  background: var(--paper);
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-lg);
   text-align: center;
 }
 
+/* =================================================================
+ * Budget — KPI 요약(킷 §7.13) · 인증 게이트 · 항목 테이블
+ * ================================================================= */
+
+.budget-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--space-sm);
+}
+
+.budget-summary-cell {
+  position: relative;
+  overflow: hidden;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-lg);
+  text-align: center;
+}
+
+.budget-summary-cell::before {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 112px;
+  height: 112px;
+  border-radius: var(--radius-pill);
+  background: var(--navy-tint-08);
+  filter: blur(28px);
+  pointer-events: none;
+}
+
 .budget-summary-label {
-  font-family: var(--font-caption-strong-family);
-  font-size: var(--font-caption-strong-size);
-  font-weight: var(--font-caption-strong-weight);
-  line-height: var(--font-caption-strong-line-height);
-  letter-spacing: var(--font-caption-strong-letter-spacing);
-  color: var(--ink-muted-48);
-  margin-bottom: var(--space-xs);
+  position: relative;
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: var(--ls-wider);
+  color: var(--text-body);
+  margin-bottom: 6px;
 }
 
 .budget-summary-value {
-  font-family: var(--font-display-md-family);
-  font-size: var(--font-display-md-size);
-  font-weight: var(--font-display-md-weight);
-  line-height: var(--font-display-md-line-height);
-  letter-spacing: var(--font-display-md-letter-spacing);
-  color: var(--ink);
+  position: relative;
+  font-family: var(--font-sans);
+  font-size: var(--fs-kpi);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: var(--ls-tight);
+  font-variant-numeric: tabular-nums;
+  color: var(--brand-600);
 }
 
-/* -----------------------------------------------------------------
- * Budget auth gate — used by <BudgetAuthGate> (task 13.2).
- *
- * Compact centered form that fronts the 예산관리 page. Deliberately quiet:
- * a single column stack (라벨 · 입력 · 확인 · 에러) with narrow max-width so
- * nothing surrounding the input suggests structure of the expected value
- * (Requirement 4.3). Sits inside <PageShell>, so the 80px section rhythm
- * comes from `.page` and this rule only handles horizontal centering and
- * intra-form spacing.
- * ----------------------------------------------------------------- */
+/* 총 지출 카드 하단의 결제자별 분할 집계 */
+.budget-summary-split {
+  position: relative;
+  margin: var(--space-sm) 0 0;
+  padding-top: var(--space-sm);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.budget-summary-split-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.budget-summary-split-name {
+  margin: 0;
+  font-size: var(--fs-eyebrow);
+  font-weight: 600;
+  letter-spacing: var(--ls-wider);
+  color: var(--text-body);
+}
+
+.budget-summary-split-value {
+  margin: 0;
+  font-size: var(--fs-card-title);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: var(--ls-tight);
+  color: var(--brand-700);
+}
 
 .budget-auth-gate {
-  max-width: 320px;
+  max-width: 360px;
   margin: 0 auto;
   display: flex;
   flex-direction: column;
-  gap: var(--space-md);
+  gap: var(--space-sm);
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  padding: var(--space-xl) var(--space-lg);
 }
 
-/* -----------------------------------------------------------------
- * CategoryManagerModal — used by <CategoryManagerModal> (task 14.4).
- *
- * Wider card variant that sits on top of the reused `.confirm-dialog`
- * overlay. Hosts a scrollable list of categories with per-row inline
- * edit + delete controls, a "새 카테고리 추가" input row, an InlineError
- * slot, and a footer "닫기" button.
- *
- * Requirements covered:
- *  - 6.2 편집 가능한 카테고리 목록 표시
- *  - 6.3/6.4/6.5 추가·수정·삭제 CRUD 트리거
- *  - 6.6/6.7 중복 및 참조 존재 시 InlineError 노출
- * ----------------------------------------------------------------- */
+.budget-item-table {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.budget-category-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.budget-category-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.budget-category-title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: var(--fs-card-title);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: var(--ls-tight);
+  color: var(--text-title);
+}
+
+.budget-category-spacer {
+  margin-left: auto;
+}
+
+/* --- CategoryManagerModal --- */
 
 .category-manager-card {
-  background: var(--canvas);
-  border-radius: var(--rounded-lg);
-  padding: var(--space-lg);
   min-width: 320px;
   width: 100%;
   max-width: 480px;
   max-height: 80vh;
-  box-shadow: var(--shadow-product);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  overflow: hidden;
-}
-
-.category-manager-title {
-  margin: 0;
-  font-family: var(--font-display-md-family);
-  font-size: var(--font-display-md-size);
-  font-weight: var(--font-display-md-weight);
-  line-height: var(--font-display-md-line-height);
-  letter-spacing: var(--font-display-md-letter-spacing);
-  color: var(--ink);
 }
 
 .category-manager-list {
@@ -891,7 +1362,6 @@ input[type='number'] {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
   overflow-y: auto;
   min-height: 0;
 }
@@ -900,15 +1370,19 @@ input[type='number'] {
   display: flex;
   align-items: center;
   gap: var(--space-sm);
-  padding: var(--space-xs) var(--space-sm);
-  border-bottom: 1px solid var(--hairline);
+  padding: var(--space-xs) var(--space-xs);
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.category-manager-row:last-child {
+  border-bottom: 0;
 }
 
 .category-manager-row-name {
   flex: 1;
-  font-family: var(--font-text);
-  font-size: var(--font-body-size);
-  color: var(--ink);
+  font-size: var(--fs-body);
+  font-weight: 500;
+  color: var(--text-title);
 }
 
 .category-manager-row-input {
@@ -918,13 +1392,14 @@ input[type='number'] {
 
 .category-manager-row-actions {
   display: flex;
-  gap: var(--space-xs);
+  gap: var(--space-xxs);
   flex-shrink: 0;
 }
 
 .category-manager-empty {
   text-align: center;
-  color: var(--ink-muted-48);
+  color: var(--text-meta);
+  font-size: var(--fs-card-body);
   padding: var(--space-md);
 }
 
@@ -937,6 +1412,7 @@ input[type='number'] {
 .category-manager-add .field {
   flex: 1;
   min-width: 0;
+  margin-bottom: 0;
 }
 
 .category-manager-footer {
@@ -944,358 +1420,173 @@ input[type='number'] {
   justify-content: flex-end;
   gap: var(--space-sm);
   padding-top: var(--space-sm);
-  border-top: 1px solid var(--hairline);
+  border-top: 1px solid var(--border);
 }
 
-/* -----------------------------------------------------------------
- * App main outlet — used by <App />'s route outlet <main> (task 9.2).
+/* =================================================================
+ * Travel — 캐리어/기내가방 4카드 (큰 카드 2 + 작은 카드 2)
  *
- * `<SideNavigation>` is `position: fixed` at width 240px, so the main
- * content region must shift right by that same amount to avoid the rail
- * overlapping page content. `min-height: 100vh` keeps the canvas
- * background (defined on body via `--canvas`) filling the viewport even
- * on pages whose content is shorter than the fold, matching the Apple-
- * quiet, always-full-bleed visual language.
- * ----------------------------------------------------------------- */
+ * 레이아웃: 한 행에 [큰 카드 70% | 작은 카드 30%], 두 행 = 총 4카드.
+ * 카드 자체를 수하물 형상으로 읽히게 하려고 상단 손잡이(handle)와 하단
+ * 바퀴(wheel) 데코를 ::before/::after 로 얹었다(색은 회사 8색 한정).
+ * ================================================================= */
 
-.app-main {
-  margin-left: 240px;
-  min-height: 100vh;
+.luggage-grid {
+  display: grid;
+  grid-template-columns: 7fr 3fr;
+  gap: var(--space-lg) var(--space-lg);
+  align-items: start;
 }
 
-/* -----------------------------------------------------------------
- * Modal — used by <Modal> (공용 팝업 컴포넌트).
- *
- * 오버레이는 페이드인, 카드는 살짝 위로 올라오는 슬라이드 페이드인
- * 애니메이션으로 등장한다. `.confirm-dialog`와 시각적 톤은 같지만
- * 별도 클래스를 두어 카테고리 관리자 모달과 향후 스타일이 갈라져도
- * 서로 영향을 주지 않도록 격리했다.
- * ----------------------------------------------------------------- */
+.luggage-card {
+  position: relative;
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  background: var(--paper);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-card);
+  transition:
+    transform 0.15s var(--ease-kit),
+    box-shadow 0.15s var(--ease-kit),
+    border-color 0.15s var(--ease-kit);
+}
 
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(29, 29, 31, 0.45);
+.luggage-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--brand-ring-40);
+  box-shadow: var(--shadow-glow);
+}
+
+/* 상단 손잡이 */
+.luggage-handle {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 96px;
+  height: 15px;
+  border: 1px solid var(--border);
+  border-bottom: 0;
+  border-radius: 10px 10px 0 0;
+  background: linear-gradient(180deg, var(--surface-200), var(--surface-0));
+}
+
+.luggage-card--small .luggage-handle {
+  width: 62px;
+  height: 12px;
+  top: -11px;
+}
+
+/* 하단 바퀴 2개 */
+.luggage-wheels {
+  position: absolute;
+  bottom: -7px;
+  left: 0;
+  right: 0;
+  height: 8px;
+  pointer-events: none;
+}
+
+.luggage-wheels::before,
+.luggage-wheels::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  width: 12px;
+  height: 8px;
+  border-radius: 0 0 var(--radius-pill) var(--radius-pill);
+  background: var(--brand-600);
+  opacity: 0.55;
+}
+
+.luggage-wheels::before {
+  left: 22px;
+}
+
+.luggage-wheels::after {
+  right: 22px;
+}
+
+.luggage-card--small .luggage-wheels::before {
+  left: 16px;
+}
+
+.luggage-card--small .luggage-wheels::after {
+  right: 16px;
+}
+
+.luggage-card__header {
   display: flex;
   align-items: center;
-  justify-content: center;
-  z-index: 1000;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
   padding: var(--space-md);
-  animation: modalFadeIn 0.2s ease-out;
+  border-bottom: 1px solid var(--border);
+  background: var(--surface-50);
+  border-radius: 15px 15px 0 0;
 }
 
-.modal-card {
-  background: var(--canvas);
-  border-radius: var(--rounded-lg);
-  padding: var(--space-lg);
-  min-width: 320px;
-  width: 100%;
-  max-width: 560px;
-  max-height: 85vh;
-  box-shadow: var(--shadow-product);
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-  animation: modalSlideIn 0.22s ease-out;
-  overflow: hidden;
-}
-
-.modal-header {
-  display: flex;
-  align-items: center;
-  border-bottom: 1px solid var(--hairline);
-  padding-bottom: var(--space-sm);
-}
-
-.modal-title {
-  margin: 0;
-  font-family: var(--font-display-md-family);
-  font-size: var(--font-display-md-size);
-  font-weight: var(--font-display-md-weight);
-  line-height: var(--font-display-md-line-height);
-  letter-spacing: var(--font-display-md-letter-spacing);
-  color: var(--ink);
-}
-
-.modal-body {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-  overflow-y: auto;
-  min-height: 0;
-}
-
-.modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: var(--space-sm);
-  padding-top: var(--space-md);
-  border-top: 1px solid var(--hairline);
-}
-
-@keyframes modalFadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes modalSlideIn {
-  from { opacity: 0; transform: translateY(8px) scale(0.98); }
-  to   { opacity: 1; transform: translateY(0)   scale(1); }
-}
-
-/* -----------------------------------------------------------------
- * Route fade — 페이지 전환 시 페이드 인 애니메이션.
- *
- * `.page` (PageShell)와 `.budget-auth-gate` 등 모든 최상위 페이지
- * 컨테이너에 적용되어 라우트가 바뀔 때마다 자연스러운 페이드로 등장한다.
- * ----------------------------------------------------------------- */
-
-@keyframes routeFadeIn {
-  from { opacity: 0; transform: translateY(4px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-.page {
-  animation: routeFadeIn 0.28s ease-out;
-}
-
-/* -----------------------------------------------------------------
- * Schedule 페이지 2단 레이아웃 (사용자 요구 1).
- *
- * 좌측(달력)은 메인 영역의 약 1/4, 우측(선택 날짜 상세)은 3/4를 차지한다.
- * FHD 미만/모바일에서는 상하로 스택된다(사용자 요구 4).
- * ----------------------------------------------------------------- */
-
-.schedule-layout {
-  display: flex;
-  gap: var(--space-xl);
-  align-items: flex-start;
-}
-
-.schedule-calendar {
-  flex: 0 0 25%;
-  min-width: 300px;
-}
-
-.schedule-detail {
-  flex: 1 1 75%;
-  min-width: 0;
-}
-
-.schedule-hint {
-  margin-top: var(--space-sm);
-  font-family: var(--font-text);
-  font-size: var(--font-caption-size);
-  line-height: var(--font-caption-line-height);
-  letter-spacing: var(--font-caption-letter-spacing);
-  color: var(--ink-muted-48);
-}
-
-.day-schedules-panel > h2 {
-  font-family: var(--font-display-md-family);
-  font-size: var(--font-body-strong-size);
-  font-weight: var(--font-body-strong-weight);
-  line-height: var(--font-body-strong-line-height);
-  color: var(--ink);
-  margin-bottom: var(--space-sm);
-}
-
-.day-schedules-placeholder {
-  color: var(--ink-muted-48);
-  padding: var(--space-lg) 0;
-}
-
-/* 모바일(≤1080px)에서는 달력/상세를 상하로 스택. */
-@media (max-width: 1080px) {
-  .schedule-layout {
-    flex-direction: column;
-  }
-
-  .schedule-calendar,
-  .schedule-detail {
-    flex: 1 1 auto;
-    width: 100%;
-    min-width: 0;
-  }
-}
-
-/* -----------------------------------------------------------------
- * TimeField — 시 / 분 드롭다운 (사용자 요구 3).
- * ----------------------------------------------------------------- */
-
-.time-field-row {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-}
-
-.time-field-select {
-  flex: 0 0 auto;
-  min-width: 84px;
-}
-
-.time-field-sep {
-  color: var(--ink-muted-48);
-  font-size: var(--font-body-size);
-}
-
-/* -----------------------------------------------------------------
- * DataTable — 정렬 가능한 헤더 버튼 + 액션 컬럼 폭 (사용자 요구 5·9·12).
- * ----------------------------------------------------------------- */
-
-/* 넓은 표는 좁은 화면에서 가로 스크롤로 흘려보낸다(사용자 요구 4). */
-.data-table-wrapper {
-  overflow-x: auto;
-}
-
-.data-table-sort-button {
+.luggage-card__num {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  background: transparent;
-  border: 0;
-  padding: 0;
+  justify-content: center;
+  flex: 0 0 auto;
+  height: 22px;
+  min-width: 26px;
+  padding: 0 7px;
+  border-radius: var(--radius-sm);
+  background: var(--brand-50);
+  box-shadow: 0 0 0 1px var(--brand-ring-25);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--brand-700);
+}
+
+.luggage-card__title {
   margin: 0;
-  font: inherit;
-  color: inherit;
-  cursor: pointer;
+  font-family: var(--font-sans);
+  font-size: var(--fs-card-title);
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: var(--ls-tight);
+  color: var(--text-title);
 }
 
-.data-table-sort-button:hover {
-  color: var(--primary);
+.luggage-card__spacer {
+  margin-left: auto;
 }
 
-.data-table-sort-button:focus-visible {
-  outline: 2px solid var(--primary-focus);
-  outline-offset: 2px;
-  border-radius: var(--rounded-xs);
+.luggage-card__body {
+  padding: var(--space-sm) var(--space-md) var(--space-md);
+  container-type: inline-size;
 }
 
-.data-table-sort-caret {
-  font-size: 10px;
-  color: var(--ink-muted-48);
-  line-height: 1;
+.luggage-card--large .luggage-card__body {
+  min-height: 300px;
 }
 
-/* 편집/삭제 아이콘 버튼 두 개가 겹치지 않도록 액션 컬럼 폭 확보(사용자 요구 5). */
-.data-table-actions-col {
-  width: 104px;
+.luggage-card--small .luggage-card__body {
+  min-height: 200px;
 }
 
-/* -----------------------------------------------------------------
- * 모바일 반응형 (≤1080px).
- *
- * 데스크탑(≥1081px) 레이아웃은 전혀 변경하지 않는다. 아래 규칙은 오직
- * 좁은 화면에서만 적용되어:
- *   - 좌측 사이드바를 화면 밖으로 밀어 두고, 좌상단 햄버거 버튼을 눌렀을 때만
- *     슬라이드 인 되는 서랍(drawer)으로 만든다. 오버레이/메뉴 선택 시 닫힌다.
- *   - 메인 콘텐츠의 사이드바 오프셋(240px)을 제거하고 좌우 패딩을 축소해
- *     모바일 브라우저 폭에 맞춰 반응형으로 흐르게 한다.
- *   - 넓은 표는 이미 `.data-table-wrapper { overflow-x: auto }`로 가로 스크롤된다.
- * ----------------------------------------------------------------- */
-
-/* 데스크탑에서는 햄버거/오버레이를 감춘다(기본값). */
-.nav-hamburger,
-.nav-overlay {
-  display: none;
+/* 카드 안의 표는 카드가 이미 페이퍼이므로 이중 보더를 걷어낸다. */
+.luggage-card__body .data-table-wrapper {
+  border: 0;
+  border-radius: var(--radius-md);
+  box-shadow: none;
 }
 
-@media (max-width: 1080px) {
-  /* 사이드바: 평소엔 화면 밖(왼쪽), .open일 때만 슬라이드 인. */
-  .side-navigation {
-    transform: translateX(-100%);
-    transition: transform 0.25s ease;
-    padding-top: 64px; /* 좌상단 햄버거 버튼과 제목이 겹치지 않도록. */
-    z-index: 1100;
-  }
-
-  .side-navigation.open {
-    transform: translateX(0);
-    box-shadow: var(--shadow-product);
-  }
-
-  /* 뒤 콘텐츠를 덮는 오버레이(터치 시 닫힘). */
-  .nav-overlay {
-    display: block;
-    position: fixed;
-    inset: 0;
-    background: rgba(29, 29, 31, 0.45);
-    z-index: 1050;
-    animation: modalFadeIn 0.2s ease-out;
-  }
-
-  /* 좌상단 고정 햄버거 버튼. */
-  .nav-hamburger {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    position: fixed;
-    top: 12px;
-    left: 12px;
-    width: 44px;
-    height: 44px;
-    z-index: 1200;
-    background: var(--canvas);
-    border: 1px solid var(--hairline);
-    border-radius: var(--rounded-md);
-    color: var(--ink);
-    font-size: 20px;
-    line-height: 1;
-    cursor: pointer;
-  }
-
-  .nav-hamburger:focus-visible {
-    outline: 2px solid var(--primary-focus);
-    outline-offset: 2px;
-  }
-
-  /* 메인 영역: 사이드바 오프셋 제거. */
-  .app-main {
-    margin-left: 0;
-  }
-
-  /* 페이지: 최대폭 제한 해제 + 반응형 패딩(상단은 햄버거 공간 확보). */
-  .page {
-    max-width: none;
-    padding: 64px var(--space-md) var(--space-xl);
-  }
-
-  /* 제목 + 툴바가 좁은 폭에서 줄바꿈되도록. */
-  .page-header {
-    flex-wrap: wrap;
-  }
-
-  /* 예산 요약 3-column을 세로로 스택해 큰 숫자가 넘치지 않게. */
-  .budget-summary {
-    flex-direction: column;
-  }
-
-  /*
-   * 일정 페이지: 모바일에서는 달력을 맨 위, 일별 스케줄을 그 아래로 배치한다.
-   * (데스크탑은 테이블 좌측·달력 우측 유지 — JSX 순서는 그대로 두고 order만
-   *  뒤집는다.)
-   */
-  .schedule-calendar {
-    order: -1;
-  }
-
-  /* 페이지 좌우 패딩을 더 줄여 가로 폭을 최대한 활용한다(사용자 요구). */
-  .page {
-    padding: 64px var(--space-xs) var(--space-lg);
-  }
-
-  /* ---------------------------------------------------------------
-   * 표(DataTable)를 세로 카드형으로 전환한다.
-   *
-   * 좁은 화면에서 다열(多列) 표는 (a) 가로 스크롤이 생기거나 (b) 열이 좁아
-   * 텍스트가 과도하게 줄바꿈되어 세로로 매우 길어진다. 이를 해결하기 위해
-   * 각 행(row)을 하나의 카드로 만들고, 각 셀을 "라벨: 값" 한 줄로 쌓는다.
-   * 값(특히 코멘트)은 화면 전체 폭을 쓰므로 줄바꿈이 최소화된다.
-   *   - thead(정렬 헤더)는 숨긴다(카드에서는 라벨이 값 옆에 붙는다).
-   *   - `td::before`가 `data-label`(컬럼명)을 값 앞에 렌더한다.
-   * ------------------------------------------------------------- */
+/*
+ * 좁은 카드(작은 가방)의 표는 컨테이너 쿼리로 "라벨: 값" 카드형으로 전환한다.
+ * 4열 표를 30% 폭에 밀어 넣으면 가로 스크롤이 생기므로, 폭 자체를 기준으로
+ * 판단해 세로 카드로 쌓는다.
+ */
+@container (max-width: 460px) {
   .data-table-wrapper {
-    overflow-x: visible; /* 카드형에서는 가로 스크롤 불필요. */
+    overflow-x: visible;
   }
 
   .data-table {
@@ -1315,40 +1606,61 @@ input[type='number'] {
   .data-table tbody tr {
     display: block;
     width: 100%;
-    border: 1px solid var(--hairline);
-    border-radius: var(--rounded-md);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
     padding: var(--space-xs) var(--space-sm);
-    margin-bottom: var(--space-sm);
-    background: var(--canvas);
-    box-shadow: var(--shadow-card); /* 개별 카드를 은은하게 띄운다. */
+    margin-bottom: var(--space-xs);
+    background: var(--paper);
+    box-shadow: var(--shadow-card);
+  }
+
+  .data-table tbody tr:nth-child(even) {
+    background: var(--surface-50);
   }
 
   .data-table td {
     display: flex;
     align-items: baseline;
-    gap: var(--space-sm);
+    gap: var(--space-xs);
     width: 100% !important;
-    border: none;
-    border-bottom: 1px solid var(--divider-soft);
-    padding: var(--space-xs) 0;
+    border: 0;
+    border-bottom: 1px solid var(--border-soft);
+    padding: 6px 0;
     white-space: normal;
   }
 
   .data-table tbody tr td:last-child {
-    border-bottom: none;
+    border-bottom: 0;
   }
 
-  /* 각 값 앞에 컬럼명 라벨을 붙인다. */
   .data-table td[data-label]::before {
     content: attr(data-label);
-    flex: 0 0 92px;
-    font-family: var(--font-caption-strong-family);
-    font-size: var(--font-caption-strong-size);
-    font-weight: var(--font-caption-strong-weight);
-    color: var(--ink-muted-48);
+    flex: 0 0 54px;
+    font-size: var(--fs-group-label);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: var(--ls-wider);
+    color: var(--text-meta);
   }
 
-  /* 값 영역은 남은 폭을 모두 차지하고, 긴 텍스트는 자연스럽게 줄바꿈. */
+  /* 챔김 체크박스 셀은 라벨을 뒤에 붙여 한 줄로 컴팩트하게. */
+  .data-table td.data-table-leading {
+    width: auto !important;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+  }
+
+  .data-table td.data-table-leading::after {
+    content: "챔김";
+    font-size: var(--fs-group-label);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: var(--ls-wider);
+    color: var(--text-meta);
+  }
+
   .data-table td > * {
     min-width: 0;
   }
@@ -1358,10 +1670,6 @@ input[type='number'] {
     min-width: 0;
   }
 
-  /*
-   * 여러 줄 값(코멘트 표시/편집)은 라벨을 위에 두고 값이 전체 폭을 쓰도록
-   * 세로로 쌓아 줄바꿈을 최소화한다.
-   */
   .data-table td:has(.cell-multiline),
   .data-table td:has(textarea) {
     flex-direction: column;
@@ -1369,25 +1677,321 @@ input[type='number'] {
     gap: var(--space-xxs);
   }
 
-  /* 빈 상태 메시지 셀은 라벨 없이 가운데 정렬 그대로. */
   .data-table td.data-table-empty {
     display: block;
     text-align: center;
-    border-bottom: none;
+    border-bottom: 0;
   }
 
-  /* 액션(수정/삭제) 셀은 라벨 없이 버튼을 오른쪽 정렬. */
   .data-table td.data-table-actions {
     width: 100% !important;
     justify-content: flex-end;
-    padding-top: var(--space-sm);
-    border-bottom: none;
+    padding-top: var(--space-xs);
+    border-bottom: 0;
   }
 
-  /* 편집 모드에서 입력 요소가 값 영역 전체 폭을 쓰도록. */
   .data-table td .field-input,
   .data-table td .data-table-edit-input {
     flex: 1;
     width: 100%;
+  }
+}
+
+/* =================================================================
+ * Animations — 킷 §7.3 slide-enter / fadeIn
+ * ================================================================= */
+
+@keyframes slideEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.slide-enter {
+  animation: slideEnter 0.4s var(--ease-kit);
+}
+
+/* =================================================================
+ * 반응형 — 킷 §9 (lg 1024px 기준으로 사이드바 노출)
+ * ================================================================= */
+
+@media (max-width: 1023px) {
+  /* 사이드바: 서랍(drawer)으로 전환 */
+  .side-navigation {
+    transform: translateX(-100%);
+    background: var(--surface-0);
+    z-index: 1100;
+  }
+
+  .side-navigation.open {
+    transform: translateX(0);
+    box-shadow: var(--shadow-elevated);
+  }
+
+  .nav-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 1050;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  /* 모바일 토글 — 우하단 고정 navy pill (킷 §6.2) */
+  .nav-hamburger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    position: fixed;
+    right: 20px;
+    bottom: 20px;
+    z-index: 1200;
+    padding: 12px 20px;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: var(--brand-600);
+    color: var(--text-on-brand);
+    box-shadow: var(--shadow-glow), var(--shadow-elevated);
+    font-size: var(--fs-body);
+    font-weight: 600;
+    line-height: 1;
+    cursor: pointer;
+    transition:
+      background-color 0.15s var(--ease-kit),
+      transform 0.15s var(--ease-kit);
+  }
+
+  .nav-hamburger:hover {
+    background: var(--brand-700);
+  }
+
+  .nav-hamburger:active {
+    transform: scale(0.95);
+  }
+
+  .nav-hamburger:focus-visible {
+    outline: 2px solid var(--brand-500);
+    outline-offset: 2px;
+  }
+
+  .app-main {
+    margin-left: 0;
+  }
+
+  .page {
+    max-width: none;
+    padding: var(--space-lg) var(--space-md) 96px;
+  }
+
+  .page-header {
+    flex-wrap: wrap;
+  }
+
+  .budget-summary {
+    grid-template-columns: 1fr;
+  }
+
+  /* 일정: 달력을 위로 */
+  .schedule-layout {
+    flex-direction: column;
+  }
+
+  .schedule-calendar,
+  .schedule-detail {
+    flex: 1 1 auto;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .schedule-calendar {
+    order: -1;
+  }
+
+  /* 여행준비: 카드 1열 */
+  .luggage-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* ---------------------------------------------------------------
+   * 표를 세로 카드형으로 전환한다(좁은 화면 공통).
+   * ------------------------------------------------------------- */
+  .data-table-wrapper {
+    overflow-x: visible;
+  }
+
+  .data-table {
+    display: block;
+    width: 100%;
+  }
+
+  .data-table colgroup,
+  .data-table thead {
+    display: none;
+  }
+
+  .data-table tbody {
+    display: block;
+  }
+
+  .data-table tbody tr {
+    display: block;
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--space-xs) var(--space-sm);
+    margin-bottom: var(--space-xs);
+    background: var(--paper);
+    box-shadow: var(--shadow-card);
+  }
+
+  .data-table tbody tr:nth-child(even) {
+    background: var(--surface-50);
+  }
+
+  .data-table td {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+    width: 100% !important;
+    border: 0;
+    border-bottom: 1px solid var(--border-soft);
+    padding: 7px 0;
+    white-space: normal;
+  }
+
+  .data-table tbody tr td:last-child {
+    border-bottom: 0;
+  }
+
+  .data-table td[data-label]::before {
+    content: attr(data-label);
+    flex: 0 0 74px;
+    font-size: var(--fs-group-label);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: var(--ls-wider);
+    color: var(--text-meta);
+  }
+
+  /* 챔김 체크박스 셀은 라벨을 뒤에 붙여 한 줄로 컴팩트하게. */
+  .data-table td.data-table-leading {
+    width: auto !important;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 0;
+  }
+
+  .data-table td.data-table-leading::after {
+    content: "챔김";
+    font-size: var(--fs-group-label);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: var(--ls-wider);
+    color: var(--text-meta);
+  }
+
+  .data-table td > * {
+    min-width: 0;
+  }
+
+  .data-table td .cell-multiline {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .data-table td:has(.cell-multiline),
+  .data-table td:has(textarea) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-xxs);
+  }
+
+  .data-table td.data-table-empty {
+    display: block;
+    text-align: center;
+    border-bottom: 0;
+  }
+
+  .data-table td.data-table-actions {
+    width: 100% !important;
+    justify-content: flex-end;
+    padding-top: var(--space-xs);
+    border-bottom: 0;
+  }
+
+  .data-table td .field-input,
+  .data-table td .data-table-edit-input {
+    flex: 1;
+    width: 100%;
+  }
+
+  .data-table-toolbar {
+    border-bottom: 0;
+    padding: 0 0 var(--space-sm);
+  }
+}
+
+/* ≥640px: 페이지 좌우 여백 확대 (킷 §9 sm) */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .page {
+    padding: var(--space-xl) var(--space-xl) 96px;
+  }
+}
+
+/* ≥1024px: 데스크탑 여백 (킷 §9 lg — px-14) */
+@media (min-width: 1024px) {
+  .page {
+    padding: var(--space-xxl) 56px var(--space-section);
+  }
+
+  .page-title {
+    font-size: 30px;
+  }
+
+  .budget-summary-value {
+    font-size: var(--fs-kpi-lg);
+  }
+}
+
+/* =================================================================
+ * Print (킷 §7.3)
+ * ================================================================= */
+
+@media print {
+  .no-print,
+  .side-navigation,
+  .nav-hamburger,
+  .nav-overlay {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff;
+  }
+
+  .app-main {
+    margin-left: 0;
+  }
+
+  .page {
+    animation: none;
   }
 }

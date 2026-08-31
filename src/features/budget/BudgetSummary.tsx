@@ -19,21 +19,37 @@
 //
 // Validates: Requirements 7.1, 7.2, 7.3, 7.4, 7.5, 7.7
 
-import { TOTAL_BUDGET, totalSpent, remainingBudget } from '../../lib/budget';
+import {
+  TOTAL_BUDGET,
+  PAYERS,
+  totalSpent,
+  remainingBudget,
+  spentByPayer,
+  spentUnassigned,
+} from '../../lib/budget';
 import { formatKRW } from '../../lib/format';
 import type { BudgetItem } from './budgetApi';
 
 export type BudgetSummaryProps = {
-  /** 현재 페이지가 보유한 Budget_Item 목록. `Wed_amount`만 참조된다. */
+  /**
+   * 현재 페이지가 보유한 Budget_Item 목록.
+   * `Wed_amount`(합산)와 `Wed_payer`(결제자 분할 집계)를 참조한다.
+   */
   items: BudgetItem[];
 };
 
 /**
  * 총 예산 · 총 지출 · 잔여 예산 세 값을 카드 3-column으로 표시한다.
  *
+ * 총 지출 카드 하단에는 결제자별 지출을 분할해 함께 보여준다(혜민 / 운석).
+ * 결제자가 지정되지 않은 항목이 있으면 "미지정" 행을 추가로 노출해 분할
+ * 합계가 총 지출과 어긋나 보이지 않게 한다.
+ *
  * 순수 프레젠테이션 컴포넌트 — 데이터 페칭·상태 관리 없음.
  */
 export function BudgetSummary({ items }: BudgetSummaryProps) {
+  const unassigned = spentUnassigned(items);
+
   return (
     <div className="budget-summary">
       <div className="budget-summary-cell">
@@ -43,6 +59,25 @@ export function BudgetSummary({ items }: BudgetSummaryProps) {
       <div className="budget-summary-cell">
         <div className="budget-summary-label">총 지출</div>
         <div className="budget-summary-value">{formatKRW(totalSpent(items))}원</div>
+
+        <dl className="budget-summary-split">
+          {PAYERS.map((payer) => (
+            <div className="budget-summary-split-row" key={payer}>
+              <dt className="budget-summary-split-name">{payer}</dt>
+              <dd className="budget-summary-split-value">
+                {formatKRW(spentByPayer(items, payer))}원
+              </dd>
+            </div>
+          ))}
+          {unassigned > 0 && (
+            <div className="budget-summary-split-row">
+              <dt className="budget-summary-split-name">미지정</dt>
+              <dd className="budget-summary-split-value">
+                {formatKRW(unassigned)}원
+              </dd>
+            </div>
+          )}
+        </dl>
       </div>
       <div className="budget-summary-cell">
         <div className="budget-summary-label">잔여 예산</div>

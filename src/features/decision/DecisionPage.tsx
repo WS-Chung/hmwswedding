@@ -260,6 +260,9 @@ export function DecisionPage() {
   return (
     <PageShell
       title="결정사항"
+      number="02"
+      eyebrow="Decision"
+      description="확정해야 할 항목과 관계자, 추가지출 여부를 기록합니다."
       toolbar={<PillButton onClick={handleAdd}>추가</PillButton>}
     >
       {errorMsg && <InlineError>{errorMsg}</InlineError>}

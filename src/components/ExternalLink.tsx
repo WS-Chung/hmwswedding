@@ -13,9 +13,10 @@ import type { ReactNode } from 'react';
  * callers can pass the URL exactly once (`<ExternalLink href={url} />`).
  *
  * Visual styling (color + hover underline) is delegated to the global
- * `a { … }` rule in src/styles/global.css, which sets color `var(--primary)`
- * and adds `text-decoration: underline` on `:hover` — satisfying
- * Requirement 3.7 without a component-scoped stylesheet.
+ * `a { … }` rule in src/styles/global.css, which sets color `var(--brand-600)`
+ * (DA_WEBUI_KIT.md §4.3 — 흰 바탕의 주 텍스트 액센트) and adds
+ * `text-decoration: underline` on `:hover` — satisfying Requirement 3.7
+ * without a component-scoped stylesheet.
  *
  * Contract (validated by Property 15 in task 11.3):
  *  - exactly one `<a>` element is rendered per invocation

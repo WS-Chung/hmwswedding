@@ -233,6 +233,9 @@ export function ContactPage() {
   return (
     <PageShell
       title="연락처"
+      number="05"
+      eyebrow="Contact"
+      description="업체와 담당자 연락 수단을 한 곳에 정리합니다."
       toolbar={
         <PillButton onClick={handleAddClick} disabled={showAdd}>
           추가
