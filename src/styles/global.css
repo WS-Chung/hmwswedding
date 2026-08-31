@@ -1454,7 +1454,8 @@ input[type="number"] {
 
 .luggage-card {
   position: relative;
-  margin-top: 14px;
+  /* 손잡이(26px)가 카드 위로 올라앉을 자리 */
+  margin-top: 28px;
   height: 100%;
   min-width: 0;
   display: flex;
@@ -1475,33 +1476,90 @@ input[type="number"] {
   box-shadow: var(--shadow-glow);
 }
 
-/* 상단 손잡이 */
+/* -----------------------------------------------------------------
+ * 상단 손잡이 — 그립 바 + 좌우 지지대 2개
+ *
+ * 하나의 빈 <span>을 두 의사요소로 나눠 그린다.
+ *   ::before → 가로 그립 바 (navy 캡슐. 고무 그립 느낌)
+ *   ::after  → 세로 지지대 2개. 좌우 border만 칠하고 가운데는 비워
+ *              두 개의 금속 봉처럼 보이게 한다.
+ * 손잡이 박스는 `bottom: 100%`로 카드 위에 얹히고, `margin-bottom: -1px`로
+ * 카드 상단 보더에 지지대 끝을 파묻어 카드 안으로 들어간 것처럼 보이게 한다.
+ * ----------------------------------------------------------------- */
+
 .luggage-handle {
   position: absolute;
-  top: -14px;
+  bottom: 100%;
   left: 50%;
   transform: translateX(-50%);
-  width: 96px;
-  height: 15px;
-  border: 1px solid var(--border);
-  border-bottom: 0;
-  border-radius: 10px 10px 0 0;
-  background: linear-gradient(180deg, var(--surface-200), var(--surface-0));
+  margin-bottom: -1px;
+  width: 112px;
+  height: 26px;
+  pointer-events: none;
 }
 
-.luggage-card--small .luggage-handle {
-  width: 62px;
-  height: 12px;
-  top: -11px;
-}
-
-/* 하단 바퀴 2개 */
-.luggage-wheels {
+/* 그립 바 */
+.luggage-handle::before {
+  content: "";
   position: absolute;
-  bottom: -7px;
+  top: 0;
   left: 0;
   right: 0;
+  height: 10px;
+  border-radius: var(--radius-pill);
+  background: linear-gradient(180deg, var(--brand-700) 0%, var(--brand-900) 100%);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
+}
+
+/* 세로 지지대 2개 (좌우 border만 사용) */
+.luggage-handle::after {
+  content: "";
+  position: absolute;
+  top: 7px;
+  left: 15px;
+  right: 15px;
+  bottom: 0;
+  border-left: 5px solid var(--co-mid);
+  border-right: 5px solid var(--co-mid);
+}
+
+/* 기내가방은 손잡이를 한 단계 작게 */
+.luggage-card--small .luggage-handle {
+  width: 86px;
+  height: 21px;
+}
+
+.luggage-card--small .luggage-handle::before {
   height: 8px;
+}
+
+.luggage-card--small .luggage-handle::after {
+  top: 6px;
+  left: 13px;
+  right: 13px;
+  border-left-width: 4px;
+  border-right-width: 4px;
+}
+
+/* -----------------------------------------------------------------
+ * 하단 바퀴 — 카드 아래로 약 70%만 노출된 타이어 2개
+ *
+ * 컨테이너를 `top: 100%`(카드 하단 경계)에 두고 높이를 타이어 지름의 70%로
+ * 잡은 뒤 `overflow: hidden`으로 자른다. 타이어(원)는 `bottom: 0`에 붙이므로
+ * 위쪽 30%가 잘려 나가고 아래 70%만 카드 밖으로 드러난다. z-index 음수 트릭
+ * 없이도 "카드에 반쯤 파묻힌 바퀴"가 된다.
+ *
+ * 타이어는 어두운 트레드(brand-900) + 밝은 허브(radial-gradient 중심)로 칠해
+ * 단색 점이 아니라 바퀴로 읽히게 한다.
+ * ----------------------------------------------------------------- */
+
+.luggage-wheels {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 14px; /* 지름 20px의 70% */
+  overflow: hidden;
   pointer-events: none;
 }
 
@@ -1510,27 +1568,45 @@ input[type="number"] {
   content: "";
   position: absolute;
   bottom: 0;
-  width: 12px;
-  height: 8px;
-  border-radius: 0 0 var(--radius-pill) var(--radius-pill);
-  background: var(--brand-600);
-  opacity: 0.55;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  /* 밝은 허브 → 금속 림 → 어두운 트레드 순의 3단 밴드 */
+  background:
+    radial-gradient(
+      circle at 50% 42%,
+      var(--surface-200) 0 22%,
+      var(--co-mid) 24% 34%,
+      var(--brand-900) 37% 100%
+    );
+  /* 컨테이너가 잘라내므로 drop shadow는 렌더되지 않는다 → 사용하지 않음 */
 }
 
+/* 좌우 간격을 이전(22px)보다 안쪽으로 모은다. */
 .luggage-wheels::before {
-  left: 22px;
+  left: 44px;
 }
 
 .luggage-wheels::after {
-  right: 22px;
+  right: 44px;
+}
+
+.luggage-card--small .luggage-wheels {
+  height: 12px; /* 지름 17px의 70% */
+}
+
+.luggage-card--small .luggage-wheels::before,
+.luggage-card--small .luggage-wheels::after {
+  width: 17px;
+  height: 17px;
 }
 
 .luggage-card--small .luggage-wheels::before {
-  left: 16px;
+  left: 38px;
 }
 
 .luggage-card--small .luggage-wheels::after {
-  right: 16px;
+  right: 38px;
 }
 
 .luggage-card__header {
