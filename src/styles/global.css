@@ -1576,15 +1576,27 @@ input[type="number"] {
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  /* 밝은 허브 → 금속 림 → 어두운 트레드 순의 3단 밴드 */
+  /*
+   * 허브 → 림 → 트레드 3단 밴드. 바퀴가 화면에서 가장 어두운 요소가 되지
+   * 않도록 전부 옅은 단계로만 구성한다(킷 §4.3·§4.5: brand-300 이하 밝은
+   * 단계는 텍스트에는 못 쓰지만 장식에는 허용).
+   *   허브   surface-50  #FAFAFA
+   *   림     co-light    #DEDEDE
+   *   트레드 brand-100   #C7DCE7
+   */
   background:
     radial-gradient(
       circle at 50% 42%,
-      var(--surface-200) 0 22%,
-      var(--co-mid) 24% 34%,
-      var(--brand-900) 37% 100%
+      var(--surface-50) 0 20%,
+      var(--co-light) 22% 34%,
+      var(--brand-100) 37% 100%
     );
-  /* 컨테이너가 잘라내므로 drop shadow는 렌더되지 않는다 → 사용하지 않음 */
+  /*
+   * 옅은 색이라 캔버스(#F4F5F7)에 묻히지 않도록 1px 윤곽만 얹는다.
+   * drop shadow는 컨테이너가 잘라내므로 쓸 수 없고, inset은 요소 안쪽이라
+   * 정상 렌더된다.
+   */
+  box-shadow: inset 0 0 0 1px var(--co-light);
 }
 
 /* 좌우 간격을 이전(22px)보다 안쪽으로 모은다. */
