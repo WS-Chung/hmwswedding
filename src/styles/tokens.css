@@ -168,17 +168,28 @@
   --fs-card-title:  15px;
   --fs-card-body:   13.5px;
   --fs-body:        14px;
-  --fs-table:       14px;
   --fs-eyebrow:     12px;
   --fs-group-label: 11px;
   --fs-nav:         15px;
   --fs-nav-num:     12px;
   --fs-kpi:         30px;
   --fs-kpi-lg:      36px;
-  --fs-thead:       12px;
   --fs-sowhat:      13px;
   --fs-tag:         12.5px;
   --fs-caption:     12px;
+
+  /*
+   * 표 내부 텍스트 스케일.
+   * 킷 기본값(본문 14 / thead 12 / 캡션 13.5 / 라벨 11 / 아이콘 12)에서
+   * 일괄 +1pt(=1.333px) 한 값이다. 표는 밀도가 높아 기본 스케일로는 숫자와
+   * 한글이 작게 읽히므로 표 안에서만 한 단계 키운다.
+   */
+  --fs-table:       15.33px; /* 14 + 1pt — 본문 셀 */
+  --fs-thead:       13.33px; /* 12 + 1pt — 헤더 */
+  --fs-table-note:  14.83px; /* 13.5 + 1pt — 빈 상태 메시지 */
+  --fs-table-label: 12.33px; /* 11 + 1pt — 카드형 "라벨: 값"의 라벨 */
+  --fs-table-icon:  13.33px; /* 12 + 1pt — 편집·삭제 아이콘 */
+  --fs-table-caret: 10.33px; /* 9 + 1pt — 정렬 방향 캐럿 */
 
   --lh-relaxed:     1.65;
   --lh-snug:        1.35;
