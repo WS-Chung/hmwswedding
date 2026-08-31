@@ -1448,7 +1448,12 @@ input[type="number"] {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-auto-rows: 1fr;
-  gap: var(--space-xl) var(--space-lg);
+  /*
+   * 행 간격은 데코 두 개가 만나는 구간을 감당해야 한다.
+   * 아래 행 카드가 갖는 margin-top(28px)까지 합한 실제 여유는 84px이고,
+   * 그 사이를 윗 행의 바퀴(42px)와 아래 행의 손잡이(26px)가 쓴다 → 16px 여유.
+   */
+  gap: 56px var(--space-lg);
   align-items: stretch;
 }
 
@@ -1558,7 +1563,7 @@ input[type="number"] {
   top: 100%;
   left: 0;
   right: 0;
-  height: 14px; /* 지름 20px의 70% */
+  height: 42px; /* 지름 60px의 70% */
   overflow: hidden;
   pointer-events: none;
 }
@@ -1568,8 +1573,8 @@ input[type="number"] {
   content: "";
   position: absolute;
   bottom: 0;
-  width: 20px;
-  height: 20px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
   /* 밝은 허브 → 금속 림 → 어두운 트레드 순의 3단 밴드 */
   background:
@@ -1592,13 +1597,13 @@ input[type="number"] {
 }
 
 .luggage-card--small .luggage-wheels {
-  height: 12px; /* 지름 17px의 70% */
+  height: 36px; /* 지름 51px의 70% */
 }
 
 .luggage-card--small .luggage-wheels::before,
 .luggage-card--small .luggage-wheels::after {
-  width: 17px;
-  height: 17px;
+  width: 51px;
+  height: 51px;
 }
 
 .luggage-card--small .luggage-wheels::before {
