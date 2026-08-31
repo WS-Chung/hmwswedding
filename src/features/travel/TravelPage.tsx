@@ -200,20 +200,26 @@ export function TravelPage() {
     }
   }, [addBag, newRow, isSubmittingAdd, refetch]);
 
-  /** 4개 카드가 공유하는 컬럼 정의: 항목 · 링크 · 금액 · 설명. */
+  /**
+   * 4개 카드가 공유하는 컬럼 정의: 항목 · 링크 · 금액 · 설명.
+   *
+   * 카드 4장이 2열로 나란히 놓이므로 한 카드에 주어지는 폭이 좁다. 실제 입력량이
+   * 가장 적은 "설명"의 폭을 가장 크게 줄여 나머지 열이 뭉개지지 않게 했다.
+   * 그래도 넘치면 카드 본문이 가로 스크롤된다.
+   */
   const columns: DataTableColumn<TravelRecord>[] = [
-    { key: 'Wed_item', header: '항목', width: '150px' },
+    { key: 'Wed_item', header: '항목', width: '130px' },
     {
       key: 'Wed_link',
       header: '링크',
-      width: '70px',
+      width: '56px',
       render: (row) =>
         row.Wed_link ? <ExternalLink href={row.Wed_link}>링크</ExternalLink> : '',
     },
     {
       key: 'Wed_amount',
       header: '금액',
-      width: '110px',
+      width: '90px',
       render: (row) => (row.Wed_amount === null ? '' : formatKRW(row.Wed_amount)),
       renderEdit: (row, patch, setPatch) => {
         const current =
@@ -235,7 +241,7 @@ export function TravelPage() {
     {
       key: 'Wed_note',
       header: '설명',
-      width: '340px',
+      width: '130px',
       render: (row) =>
         row.Wed_note ? <div className="cell-multiline">{row.Wed_note}</div> : '',
       renderEdit: (row, patch, setPatch) => {

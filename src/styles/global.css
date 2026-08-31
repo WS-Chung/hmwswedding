@@ -1426,21 +1426,29 @@ input[type="number"] {
 /* =================================================================
  * Travel — 캐리어/기내가방 4카드 (큰 카드 2 + 작은 카드 2)
  *
- * 레이아웃: 한 행에 [큰 카드 70% | 작은 카드 30%], 두 행 = 총 4카드.
+ * 레이아웃: 2열 × 2행 균등 그리드.
+ *   좌상 혜민 캐리어 | 우상 운석 캐리어
+ *   좌하 혜민 기내가방 | 우하 운석 기내가방
+ * 네 카드의 좌우 폭(1fr)과 상하 높이(고정 본문 높이 + stretch)를 동일하게
+ * 맞춘다. 표가 카드보다 크면 카드가 늘어나는 대신 본문이 스크롤된다.
+ *
  * 카드 자체를 수하물 형상으로 읽히게 하려고 상단 손잡이(handle)와 하단
  * 바퀴(wheel) 데코를 ::before/::after 로 얹었다(색은 회사 8색 한정).
  * ================================================================= */
 
 .luggage-grid {
   display: grid;
-  grid-template-columns: 7fr 3fr;
-  gap: var(--space-lg) var(--space-lg);
-  align-items: start;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-rows: 1fr;
+  gap: var(--space-xl) var(--space-lg);
+  align-items: stretch;
 }
 
 .luggage-card {
   position: relative;
   margin-top: 14px;
+  height: 100%;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   background: var(--paper);
@@ -1559,17 +1567,19 @@ input[type="number"] {
   margin-left: auto;
 }
 
+/*
+ * 본문은 고정 높이의 스크롤 박스다. `height`로 기준 높이를 고정하고
+ * `flex: 1 1 auto`로 두어, 같은 행의 다른 카드가 헤더 줄바꿈 등으로 더 높아지면
+ * 본문이 그 차이를 흡수해 네 카드의 총 높이가 어긋나지 않는다.
+ * 세로·가로 어느 쪽이든 내용이 넘치면 이 박스 안에서 스크롤된다.
+ */
 .luggage-card__body {
+  flex: 1 1 auto;
+  height: 320px;
+  min-height: 0;
+  overflow: auto;
   padding: var(--space-sm) var(--space-md) var(--space-md);
   container-type: inline-size;
-}
-
-.luggage-card--large .luggage-card__body {
-  min-height: 300px;
-}
-
-.luggage-card--small .luggage-card__body {
-  min-height: 200px;
 }
 
 /* 카드 안의 표는 카드가 이미 페이퍼이므로 이중 보더를 걷어낸다. */
@@ -1577,6 +1587,23 @@ input[type="number"] {
   border: 0;
   border-radius: var(--radius-md);
   box-shadow: none;
+  /* 스크롤은 본문 박스가 담당한다(중첩 스크롤 컨테이너 방지). */
+  overflow: visible;
+}
+
+/*
+ * 카드 폭이 좁아도 열을 뭉개지 않고 가로 스크롤로 흘려보낸다.
+ * (컬럼 폭 합계에 맞춘 하한선)
+ */
+.luggage-card__body .data-table {
+  min-width: 540px;
+}
+
+/* 고정 높이 스크롤 박스에서 헤더가 사라지지 않도록 고정한다. */
+.luggage-card__body .data-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
 }
 
 /*
@@ -1584,9 +1611,14 @@ input[type="number"] {
  * 4열 표를 30% 폭에 밀어 넣으면 가로 스크롤이 생기므로, 폭 자체를 기준으로
  * 판단해 세로 카드로 쌓는다.
  */
-@container (max-width: 460px) {
+@container (max-width: 380px) {
   .data-table-wrapper {
     overflow-x: visible;
+  }
+
+  /* 카드형에서는 표 하한 폭을 풀어 세로로 쌓이게 한다. */
+  .luggage-card__body .data-table {
+    min-width: 0;
   }
 
   .data-table {
@@ -1824,9 +1856,27 @@ input[type="number"] {
     order: -1;
   }
 
-  /* 여행준비: 카드 1열 */
+  /*
+   * 여행준비: 카드 1열. 좁은 화면에서는 카드마다 고정 높이 스크롤 박스를 두는
+   * 대신 내용만큼 늘어나게 하고(페이지 스크롤에 맡긴다), 표는 아래 카드형
+   * 규칙에 따라 세로로 쌓이므로 표 하한 폭도 풀어준다.
+   */
   .luggage-grid {
     grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+  }
+
+  .luggage-card__body {
+    height: auto;
+    overflow: visible;
+  }
+
+  .luggage-card__body .data-table {
+    min-width: 0;
+  }
+
+  .luggage-card__body .data-table thead th {
+    position: static;
   }
 
   /* ---------------------------------------------------------------
