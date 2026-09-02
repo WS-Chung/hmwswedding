@@ -16,13 +16,15 @@
 
 | 경로 | 페이지 | 설명 |
 | --- | --- | --- |
-| `/` | 일정 (Schedule) | 2026년 7월 달력을 초기 표시. 날짜 클릭 시 해당 일자 일정 CRUD |
+| `/` | 일정 (Schedule) | 접속 시점의 이번 달 달력을 초기 표시. 날짜 클릭 시 해당 일자 일정 CRUD |
 | `/decision` | 결정사항 (Decision) | 결정 항목 CRUD |
 | `/budget` | 예산관리 (Budget) | 비밀번호 게이트 통과 후 총액/사용/잔여 요약 + 항목·카테고리 CRUD |
 | `/travel` | 여행준비 (Travel) | 캐리어/기내가방 4카드(혜민·운석 × 캐리어·기내가방)별 항목 CRUD |
 | `/contact` | 연락처 (Contact) | 연락처 CRUD |
 
-초기 진입 URL은 `/`(일정 페이지)로, 2026년 7월 달력이 렌더링된다 (Requirement 1.4, 2.2).
+초기 진입 URL은 `/`(일정 페이지)로, 브라우저 시스템 시계 기준 **이번 달** 달력이 렌더링된다. 초기 표시 월은 `lib/calendar.ts`의 `currentYearMonth()`가 로컬 시간으로 계산한다.
+
+> 스펙(`requirements.md` 2.2)에는 초기 표시 월이 "2026년 7월" 고정으로 적혀 있으나, 이후 요청으로 시스템 시간 연동으로 변경되었다. 코드가 최신이다.
 
 ## 사전 요구 사항
 
@@ -49,11 +51,14 @@ alter table "Wed_Travel"
   add column if not exists "Wed_bag" text not null default 'hyemin_carrier';
 
 create index if not exists "Wed_Travel_bag_idx" on "Wed_Travel" ("Wed_bag");
+
+alter table "Wed_Travel"
+  add column if not exists "Wed_packed" boolean not null default false;
 ```
 
 `Wed_bag` 허용 값은 `hyemin_carrier` · `hyemin_cabin` · `unseok_carrier` · `unseok_cabin` 네 개이며, 표시 라벨은 `src/features/travel/bags.ts`에서만 관리한다.
 
-여행준비 표 좌측의 "챙김" 체크박스는 눈으로 소거하기 위한 **화면 전용** 표시다. DB에 저장하지 않으므로 새로고침하면 초기화된다.
+`Wed_packed`는 표 좌측 "챙김" 체크박스의 상태다. DB에 저장하므로 새로고침·재접속·다른 기기에서도 체크가 유지되며, true인 행은 전체가 취소선으로 표시된다.
 
 ### 3. Supabase anon 키 삽입
 
@@ -76,7 +81,7 @@ Supabase 대시보드 → **Settings → API → Project API keys → `anon` `pu
 npm run dev
 ```
 
-기본적으로 `http://localhost:5173` 에서 앱이 뜨고, 최초 화면은 `/` 로 리다이렉트되며 2026년 7월 달력이 표시된다.
+기본적으로 `http://localhost:5173` 에서 앱이 뜨고, 최초 화면은 `/` 로 리다이렉트되며 이번 달 달력이 표시된다.
 
 ## 빌드
 
