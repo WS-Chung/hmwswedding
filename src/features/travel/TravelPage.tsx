@@ -31,11 +31,17 @@ import type { BagDefinition, BagKey } from './bags';
  * 수량으로 바뀌었을 뿐이므로 DB 스키마 변경은 없다. 0 이상의 정수라는 검증
  * 규칙도 그대로 유효하다.
  *
- * 챙김 체크(취소선):
- *   물건을 가방에 넣으면서 눈으로 소거하기 위한 **화면 전용** 표시다. 서버에
- *   저장하지 않고 이 컴포넌트의 로컬 state(`packedIds`)로만 관리하므로
- *   새로고침하면 초기화된다. 체크된 행은 `row-packed` 클래스로 전체가 취소선 +
- *   뮤트 처리된다. 삭제된 행의 id가 set에 남아도 렌더에 영향이 없다.
+ * 챙김 체크(`Wed_packed`):
+ *   물건을 가방에 넣으면서 하나씩 소거하는 용도이므로 상태를 DB에 저장한다.
+ *   따라서 페이지에 다시 들어오거나 다른 기기에서 열어도 이전에 체크한 항목이
+ *   체크된 상태로 표시된다. 체크된 행은 `row-packed` 클래스로 전체가 취소선 +
+ *   뮤트 처리된다.
+ *
+ *   체크박스만은 낙관적 갱신(optimistic update)을 쓴다. 이 페이지의 다른
+ *   mutation은 "성공한 refetch 결과로만 화면을 교체한다"는 규칙을 따르지만,
+ *   여러 항목을 연달아 체크하는 흐름에서 매번 서버 왕복을 기다리면 체크리스트로
+ *   쓸 수 없다. 실패하면 **그 행만** 이전 값으로 되돌리고 오류를 띄워, 화면이
+ *   서버 상태와 다르게 남지 않도록 한다(다른 행의 동시 토글 결과는 보존된다).
  *
  * 데이터 흐름은 다른 페이지와 동일하다: 이 컴포넌트가 전체 레코드 목록을
  * 소유하고, mutation 성공 시에만 `refetch()`로 목록 전체를 교체한다. 실패 시
@@ -112,11 +118,6 @@ export function TravelPage() {
   const [newRow, setNewRow] = useState<NewRow>({ ...emptyNewRow });
   const [addErrors, setAddErrors] = useState<string[]>([]);
   const [isSubmittingAdd, setIsSubmittingAdd] = useState(false);
-  /**
-   * 챙김 표시된 행의 `Wed_id` 집합. 화면 전용 상태이므로 서버로 나가지 않고
-   * 새로고침 시 비워진다.
-   */
-  const [packedIds, setPackedIds] = useState<ReadonlySet<string>>(new Set());
 
   const refetch = useCallback(async () => {
     try {
@@ -161,14 +162,32 @@ export function TravelPage() {
     [refetch],
   );
 
-  /** 챙김 표시 토글 — 로컬 state만 바꾼다(서버 요청 없음). */
-  const handleTogglePacked = useCallback((id: string) => {
-    setPackedIds((current) => {
-      const next = new Set(current);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  /**
+   * 챙김 체크박스 토글. 화면을 먼저 바꾼 뒤 서버에 반영한다.
+   *
+   * 롤백은 배열 스냅샷을 되돌리는 대신 해당 행만 되돌린다. 스냅샷 복원은 그
+   * 사이에 사용자가 토글한 다른 행의 결과까지 덮어써 버린다.
+   */
+  const handleTogglePacked = useCallback(async (row: TravelRecord) => {
+    const next = !row.Wed_packed;
+
+    setErrorMsg(null);
+    setRecords((current) =>
+      current.map((r) =>
+        r.Wed_id === row.Wed_id ? { ...r, Wed_packed: next } : r,
+      ),
+    );
+
+    try {
+      await travelApi.update(row.Wed_id, { Wed_packed: next });
+    } catch (err) {
+      setRecords((current) =>
+        current.map((r) =>
+          r.Wed_id === row.Wed_id ? { ...r, Wed_packed: row.Wed_packed } : r,
+        ),
+      );
+      setErrorMsg(extractMessage(err));
+    }
   }, []);
 
   const handleOpenAdd = useCallback((bag: BagKey) => {
@@ -194,7 +213,12 @@ export function TravelPage() {
     setAddErrors([]);
     setIsSubmittingAdd(true);
     try {
-      await travelApi.create({ ...result.value, Wed_bag: addBag });
+      // 새 항목은 항상 미챙김 상태로 시작한다(DB DEFAULT와 동일).
+      await travelApi.create({
+        ...result.value,
+        Wed_bag: addBag,
+        Wed_packed: false,
+      });
       await refetch();
       setAddBag(null);
     } catch (err) {
@@ -275,7 +299,7 @@ export function TravelPage() {
   /** 카드 한 장 — 헤더(번호·타이틀·챙김 진행·추가) + 자기 테이블. */
   const renderCard = (bag: BagDefinition) => {
     const rows = byBag.get(bag.key) ?? [];
-    const packedCount = rows.filter((r) => packedIds.has(r.Wed_id)).length;
+    const packedCount = rows.filter((r) => r.Wed_packed).length;
     const allPacked = rows.length > 0 && packedCount === rows.length;
 
     return (
@@ -316,15 +340,13 @@ export function TravelPage() {
               <input
                 type="checkbox"
                 className="pack-checkbox"
-                checked={packedIds.has(row.Wed_id)}
-                onChange={() => handleTogglePacked(row.Wed_id)}
+                checked={row.Wed_packed}
+                onChange={() => void handleTogglePacked(row)}
                 aria-label={`${row.Wed_item} 챙김`}
               />
             )}
             leadingControlLabel="챙김"
-            rowClassName={(row) =>
-              packedIds.has(row.Wed_id) ? 'row-packed' : undefined
-            }
+            rowClassName={(row) => (row.Wed_packed ? 'row-packed' : undefined)}
             onSaveEdit={handleSave}
             onDelete={handleDelete}
             onError={setErrorMsg}

@@ -27,6 +27,12 @@ export type TravelRecord = {
   /** URL 또는 NULL(선택). 표에서는 "링크"로만 표시. */
   Wed_link: string | null;
   Wed_note: string | null;
+  /**
+   * 실제로 가방에 챙겼는지 여부. 표 좌측 체크박스가 이 값을 토글하며,
+   * true면 해당 행 전체가 취소선으로 소거 표시된다.
+   * DB에는 NOT NULL + DEFAULT false로 정의되어 있다.
+   */
+  Wed_packed: boolean;
   Wed_created_at: string;
 };
 
